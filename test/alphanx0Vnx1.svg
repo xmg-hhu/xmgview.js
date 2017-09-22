@@ -1,0 +1,215 @@
+<svg version="1.1"
+		 xmlns="http://www.w3.org/2000/svg"
+		 xmlns:xlink="http://www.w3.org/1999/xlink"
+		 id="alphanx0Vnx1"
+		 onload="init()">
+
+	<script type="text/javascript" xlink:href="../xmgview.js" />
+
+	<grammar>
+		<entry name="Talphanx0Vnx1-1">
+			<family>alphanx0Vnx1</family>
+			<trace>
+				<class>alphanx0Vnx1</class>
+			</trace>
+			<tree id="Talphanx0Vnx1-1">
+				<node type="std">
+					<narg>
+						<fs>
+							<f name="bot">
+								<fs coref="@J">
+									<f name="agr">
+										<sym varname="@A"/>
+									</f>
+									<f name="assign-case">
+										<sym varname="@B"/>
+									</f>
+									<f name="assign-comp">
+										<sym varname="@C"/>
+									</f>
+									<f name="comp">
+										<sym value="nil"/>
+									</f>
+									<f name="control">
+										<sym varname="@D"/>
+									</f>
+									<f name="extracted">
+										<sym value="-"/>
+									</f>
+									<f name="inv">
+										<sym value="-"/>
+									</f>
+									<f name="mainv">
+										<sym varname="@E"/>
+									</f>
+									<f name="mode">
+										<sym varname="@F"/>
+									</f>
+									<f name="passive">
+										<sym varname="@G"/>
+									</f>
+									<f name="perfect">
+										<sym varname="@H"/>
+									</f>
+									<f name="progressive">
+										<sym varname="@I"/>
+									</f>
+									<f name="tense">
+										<sym varname="@I"/>
+									</f>
+									<f name="wh">
+										<sym value="-"/>
+									</f>
+								</fs>
+							</f>
+							<f name="cat">
+								<sym value="s"/>
+							</f>
+						</fs>
+					</narg>
+					<node type="subst">
+						<narg>
+							<fs>
+								<f name="cat">
+									<sym value="np"/>
+								</f>
+								<f name="top">
+									<fs coref="@K">
+										<f name="agr">
+											<sym varname="@A"/>
+										</f>
+										<f name="case">
+											<sym varname="@B"/>
+										</f>
+										<f name="wh">
+											<sym value="-"/>
+										</f>
+									</fs>
+								</f>
+							</fs>
+						</narg>
+					</node>
+					<node type="std">
+						<narg>
+							<fs>
+								<f name="bot">
+									<fs coref="@R">
+										<f name="agr">
+											<sym varname="@L"/>
+										</f>
+										<f name="assign-case">
+											<sym varname="@M"/>
+										</f>
+										<f name="compar">
+											<sym value="-"/>
+										</f>
+										<f name="mainv">
+											<sym varname="@N"/>
+										</f>
+										<f name="mode">
+											<sym varname="@O"/>
+										</f>
+										<f name="passive">
+											<sym varname="@P"/>
+										</f>
+										<f name="tense">
+											<sym varname="@Q"/>
+										</f>
+									</fs>
+								</f>
+								<f name="cat">
+									<sym value="vp"/>
+								</f>
+								<f name="top">
+									<fs coref="@S">
+										<f name="agr">
+											<sym varname="@A"/>
+										</f>
+										<f name="assign-case">
+											<sym varname="@B"/>
+										</f>
+										<f name="assign-comp">
+											<sym varname="@C"/>
+										</f>
+										<f name="mainv">
+											<sym varname="@E"/>
+										</f>
+										<f name="mode">
+											<sym varname="@F"/>
+										</f>
+										<f name="passive">
+											<sym varname="@F"/>
+										</f>
+										<f name="perfect">
+											<sym varname="@H"/>
+										</f>
+										<f name="progressive">
+											<sym varname="@I"/>
+										</f>
+										<f name="tense">
+											<sym varname="@I"/>
+										</f>
+									</fs>
+								</f>
+							</fs>
+						</narg>
+						<node type="anchor">
+							<narg>
+								<fs>
+									<f name="cat">
+										<sym value="v"/>
+									</f>
+									<f name="top">
+										<fs coref="@T">
+											<f name="agr">
+												<sym varname="@L"/>
+											</f>
+											<f name="assign-case">
+												<sym varname="@M"/>
+											</f>
+											<f name="mainv">
+												<sym varname="@N"/>
+											</f>
+											<f name="mode">
+												<sym varname="@O"/>
+											</f>
+											<f name="passive">
+												<sym varname="@P"/>
+											</f>
+											<f name="tense">
+												<sym varname="@Q"/>
+											</f>
+										</fs>
+									</f>
+								</fs>
+							</narg>
+						</node>
+						<node type="subst">
+							<narg>
+								<fs>
+									<f name="cat">
+										<sym value="np"/>
+									</f>
+									<f name="top">
+										<fs coref="@U">
+											<f name="case">
+												<sym value="acc"/>
+											</f>
+										</fs>
+									</f>
+								</fs>
+							</narg>
+						</node>
+					</node>
+				</node>
+			</tree>
+			<semantics>
+			</semantics>
+			<interface>
+				<fs>
+				</fs>
+			</interface>
+		</entry>
+	</grammar>
+
+</svg>
