@@ -1,6 +1,6 @@
 // xmgview.js
 
-// Draws beautiful SVG trees and feature structures from XMG's boring XML output of XMG.
+// Draws beautiful SVG trees and feature structures from XMG's boring XML output.
 // Written by Timm Lichte (lichte@phil.hhu.de).
 
 // TODO: revisit padding variables
