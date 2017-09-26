@@ -1,0 +1,57 @@
+<svg version="1.1"
+		 xmlns="http://www.w3.org/2000/svg"
+		 xmlns:xlink="http://www.w3.org/1999/xlink"
+		 id="alphanx0Vnx1"
+		 onload="init()">
+
+	<script type="text/javascript" xlink:href="../xmgview.js" />
+
+	<grammar>
+  <entry name="n0Vn1pp-dir_0">
+    <family>n0Vn1pp-dir</family>
+    <trace>
+      <class>DirPrepObj</class>
+      <class>DirObj</class>
+      <class>VSpine</class>
+      <class>Subj</class>
+      <class>n0V</class>
+      <class>n0Vn1</class>
+      <class>n0Vn1pp-dir</class>
+    </trace>
+    <frame >
+      <fs coref="@Frame1" type="[causation,event]">
+        <f name="actor">
+          <sym value="@V2"/>
+        </f>
+        <f name="cause">
+          <fs coref="@Frame3" type="[activity,event]">
+            <f name="actor">
+              <sym value="@V2"/>
+            </f>
+            <f name="theme">
+              <sym value="@V4"/>
+            </f>
+          </fs>
+        </f>
+        <f name="effect">
+          <fs coref="@Frame5" type="[bounded-translocation,event,motion,translocation]">
+            <f name="goal">
+              <sym value="@V6"/>
+            </f>
+            <f name="mover">
+              <sym value="@V4"/>
+            </f>
+            <f name="path">
+              <sym value="@V7"/>
+            </f>
+          </fs>
+        </f>
+        <f name="theme">
+          <sym value="@V4"/>
+        </f>
+      </fs>
+    </frame>
+  </entry>
+	</grammar>
+
+</svg>
