@@ -40,6 +40,7 @@ function makeTree(hook,entry){
 		console.log(svgRoot);
 		console.log(entry);
 
+		// turn tree elements into daughters of the SVG root
 		transformTree(entry.getElementsByTagName("tree")[0],svgRoot);  // TODO: remove second argument?
 		for (var i = 0; i < svgRoot.children.length; i++) {
 				if (svgRoot.children[i].getAttribute("type") == "tree") {
@@ -52,6 +53,12 @@ function makeTree(hook,entry){
 		addButtons(svgRoot,name);
 }
 
+// makeFrame is used in the webgui
+function makeFrame(hook,entry) {
+		// TODO
+}
+
+// turn inTree into daughter of outParent
 function transformTree (inTree,outParent) {
 		var daughters;
 		if (inTree.children.length > 1) {
@@ -83,6 +90,7 @@ function transformTree (inTree,outParent) {
 
 }
 
+// turn inFS into daughter of outParent
 function transformFS(inFS,outParent) {
 		var new_fs = document.createElementNS("http://www.w3.org/2000/svg","svg");
 		new_fs.setAttribute("type","fs");
