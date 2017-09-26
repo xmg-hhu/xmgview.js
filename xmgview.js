@@ -54,11 +54,22 @@ function makeTree(hook,entry){
 }
 
 // makeFrame is used in the webgui
-function makeFrame(hook,entry) {
-		// TODO
+function initFrame() {
+		svgRoot = document.getElementsByTagName("svg")[0];
+		treeName = document.getElementsByTagName("entry")[0].getAttribute("name");
+		
+		transformFS(document.getElementsByTagName("fs")[0],svgRoot);  // TODO: remove second argument?
+		for (var i = 0; i < svgRoot.children.length; i++) {
+				if (svgRoot.children[i].getAttribute("type") == "fs") {
+						treeRoot = svgRoot.children[i];
+				}
+		}
+
+		svgRoot.removeChild(document.getElementsByTagName("grammar")[0]);
+		processFS(treeRoot);
 }
 
-// turn inTree into daughter of outParent
+// turn inTree into an svg element and make it daughter of outParent
 function transformTree (inTree,outParent) {
 		var daughters;
 		if (inTree.children.length > 1) {
