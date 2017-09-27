@@ -65,7 +65,7 @@ function initFrame() {
 				}
 		}
 
-		svgRoot.removeChild(document.getElementsByTagName("grammar")[0]);
+		svgRoot.removeChild(document.getElementsByTagName("grammar")[0]);	
 		processFS(treeRoot);
 }
 
@@ -101,15 +101,19 @@ function transformTree (inTree,outParent) {
 
 }
 
-// turn inFS into daughter of outParent
+// turn inFS into an svg element and make it a daughter of outParent
 function transformFS(inFS,outParent) {
 		var new_fs = document.createElementNS("http://www.w3.org/2000/svg","svg");
 		new_fs.setAttribute("type","fs");
 		if (inFS.hasAttribute("coref")) {
 				new_fs.setAttribute("label",inFS.getAttribute("coref").replace("@",""));
 		}
+		if (inFS.hasAttribute("type")) {
+				new_fs.setAttribute("fstype",inFS.getAttribute("type").replace("[","").replace("]","").toLowerCase());
+		}
 		outParent.appendChild(new_fs);
 
+		// feature-value pairs
 		for (var i = 0; i < inFS.children.length; i++){
 				var child = inFS.children.item(i);
 
@@ -142,6 +146,7 @@ function transformFS(inFS,outParent) {
 		}
 }
 
+// first top, then bot
 function reorderFS(node) {
 		var top = -1, 
 				bot = -1,
@@ -317,10 +322,37 @@ function addPhon(phon,node) {
 
 function processFS(fs) {
 		fs.setAttribute("x",0); // needed for node marks
+		var hasType = false;
+		var ypoint = 3;
+
+		// process type of feature structure
+		if (fs.hasAttribute("fstype")) {
+				var hasType = true;
+				var type = document.createElementNS("http://www.w3.org/2000/svg","svg");
+				type.setAttribute("type","type");
+				fs.insertBefore(type,fs.firstChild);
+				
+				var text = document.createElementNS("http://www.w3.org/2000/svg","text");
+				text.innerHTML = fs.getAttribute("fstype");
+				text.setAttribute("y", "0.9em");
+				text.setAttribute("font-size",15);
+				text.setAttribute("style", "font-style: italic;");
+				type.appendChild(text);
+
+				// position type of feature structure
+				type.setAttribute("x", 5);  //padding
+				type.setAttribute("y", ypoint);			
+				ypoint += type.getBBox().height + 5; //padding 
+
+		}
+	
+		// assumption: if there is a type, it is the first child of the feature structure
+		var firstFeatureChild = 0;
+		if (hasType) { firstFeatureChild = 1;}
 
 		// compute maxlength of feature names
 		var maxlengthFeatures = 0;
-		for (var i = 0; i < fs.children.length; i++){
+		for (var i = firstFeatureChild; i < fs.children.length; i++){
 				var feature = fs.children[i];
 				var featureName = feature.children[0];
 
@@ -335,8 +367,7 @@ function processFS(fs) {
 		}
 
 		//	process feature and value
-		var ypoint = 3;
-		for (var i = 0; i < fs.children.length; i++){
+		for (var i = firstFeatureChild; i < fs.children.length; i++){
 				var feature = fs.children[i];
 				var featureName = feature.children[0];
 				var value = feature.children[1];
@@ -354,7 +385,7 @@ function processFS(fs) {
 
 				// value is text element
 				if (value.children[0].tagName =="text") {
-						value.children[0].setAttribute("y", "0.9em");
+						value.children[0].setAttribute("y", "0.86em");
 						value.children[0].setAttribute("font-size", "15");
 						value.children[0].setAttribute("x", labelWidth);
 				}
@@ -373,7 +404,7 @@ function processFS(fs) {
 				}	
 				
 				// center feature name vertically
-				featureName.setAttribute("y", value.getBBox().height/2-featureName.getBBox().height/2 + 13); // padding
+				featureName.setAttribute("y", value.getBBox().height/2-featureName.getBBox().height/2 + 12); // padding
 				
 				// set and increment y attribute
 				feature.setAttribute("y", ypoint);
