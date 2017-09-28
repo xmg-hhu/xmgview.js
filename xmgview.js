@@ -1,6 +1,8 @@
 // xmgview.js
 
-// Draws beautiful SVG trees and feature structures from XMG's boring XML output.
+// Timestamp: 2017-09-28 Thu 
+
+// Draws beautiful SVG trees and feature structures based on XMG's boring XML output.
 // Written by Timm Lichte (lichte@phil.hhu.de).
 
 // TODO: revisit padding variables
@@ -11,14 +13,15 @@ var offsetxFSfeat = 5;
 var offsetxNode = 40;
 var offsetyNode = 50;
 
-var svgRoot,
-		treeName,
-		treeRoot;
+// global variables 
+var svgRoot,										// root element of the svg tree
+		entryName,									// name of the grammar entry 
+		treeRoot;										// root node of the syntactic tree
 
-// initi() is for standalone purposes
+// draw tree (standalone) 
 function init(){
 		svgRoot = document.getElementsByTagName("svg")[0];
-		treeName = document.getElementsByTagName("entry")[0].getAttribute("name");
+		entryName = document.getElementsByTagName("entry")[0].getAttribute("name");
 
 		transformTree(document.getElementsByTagName("tree")[0],svgRoot);  // TODO: remove second argument?
 		for (var i = 0; i < svgRoot.children.length; i++) {
@@ -29,16 +32,19 @@ function init(){
 		
 		svgRoot.removeChild(document.getElementsByTagName("grammar")[0]);
 		processTree(svgRoot);
-		addButtons(svgRoot,name);
+		addButtons(svgRoot);
 }
 
-// makeTree is used in the webgui
-function makeTree(hook,entry){
-		treeName = entry.getAttribute("name");
-		svgRoot = hook;
+// draw frame (standalone)
+function standaloneFrame() {
+		makeFrame(document.getElementsByTagName("svg")[0],document.getElementsByTagName("entry")[0]);
+}
 
-		console.log(svgRoot);
-		console.log(entry);
+
+// makeTree is used in the webgui
+function makeTree(target,entry) {
+		entryName = entry.getAttribute("name");
+		svgRoot = target;
 
 		// turn tree elements into daughters of the SVG root
 		transformTree(entry.getElementsByTagName("tree")[0],svgRoot);  // TODO: remove second argument?
@@ -48,25 +54,44 @@ function makeTree(hook,entry){
 				}
 		}	
 		
-		// svgRoot.removeChild(document.getElementsByTagName("grammar")[0]);
 		processTree(svgRoot);
-		addButtons(svgRoot,name);
+		addButtons(svgRoot);
 }
 
 // makeFrame is used in the webgui
-function initFrame() {
-		svgRoot = document.getElementsByTagName("svg")[0];
-		treeName = document.getElementsByTagName("entry")[0].getAttribute("name");
-		
-		transformFS(document.getElementsByTagName("fs")[0],svgRoot);  // TODO: remove second argument?
+function makeFrame(target,entry) {
+		entryName = entry.getAttribute("name");
+		svgRoot = target;
+
+		var frame = entry.getElementsByTagName("frame")[0];
+		var ypoint = 3;
+
+		// frame descriptions may consist of separate components
+		for (var i = 0; i < frame.children.length; i++) {
+				transformFS(frame.children[i],svgRoot);  // TODO: remove second argument?			
+		}
 		for (var i = 0; i < svgRoot.children.length; i++) {
 				if (svgRoot.children[i].getAttribute("type") == "fs") {
-						treeRoot = svgRoot.children[i];
+						var fs = svgRoot.children[i];
+						processFS(fs);
+						fs.setAttribute("y",ypoint);  // paddin
+						var fsHeight = fs.getBBox().height;
+						// plot label of overall frame 
+						if (fs.hasAttribute("label")) {
+								addLabel(fs.getAttribute("label"),svgRoot);
+								var label = svgRoot.lastElementChild;
+								var labelSize = label.getBBox();
+								fs.setAttribute("x",labelSize.width + 5);  // padding
+								svgRoot.lastElementChild.setAttribute("y",fsHeight > labelSize.height ? fsHeight/2 - labelSize.height/2 + ypoint : ypoint);
+						}
+						ypoint += fsHeight + 20;  // padding
 				}
 		}
+		
+		// svgRoot.removeChild(document.getElementsByTagName("grammar")[0]);
 
-		svgRoot.removeChild(document.getElementsByTagName("grammar")[0]);	
-		processFS(treeRoot);
+		// addButtons(svgRoot); // FIXME
+
 }
 
 // turn inTree into an svg element and make it daughter of outParent
@@ -97,8 +122,6 @@ function transformTree (inTree,outParent) {
 						reorderFS(new_outParent);
 				}
 		}
-
-
 }
 
 // turn inFS into an svg element and make it a daughter of outParent
@@ -108,9 +131,23 @@ function transformFS(inFS,outParent) {
 		if (inFS.hasAttribute("coref")) {
 				new_fs.setAttribute("label",inFS.getAttribute("coref").replace("@",""));
 		}
+
+		// probably deprecated
 		if (inFS.hasAttribute("type")) {
 				new_fs.setAttribute("fstype",inFS.getAttribute("type").replace("[","").replace("]","").toLowerCase());
 		}
+		// following the new DTD which has a ctype element
+		if (inFS.children.length > 0 && inFS.children[0].tagName == "ctype") {
+				var ctype = inFS.children[0];
+				var ctypeArray = [];
+				for (var i = 0; i < ctype.children.length; i++){
+						// ctypeArray.push(ctype.children[i].innerHTML);
+						ctypeArray.push(ctype.children[i].getAttribute("val"));
+				}
+				new_fs.setAttribute("fstype",ctypeArray.toString());
+				inFS.removeChild(ctype); // to make things easier when dealing with feature-value pairs afterwards
+		}
+		
 		outParent.appendChild(new_fs);
 
 		// feature-value pairs
@@ -343,7 +380,10 @@ function processFS(fs) {
 				type.setAttribute("x", 5);  //padding
 				type.setAttribute("y", ypoint);			
 				ypoint += type.getBBox().height + 5; //padding 
+		}
 
+		if (fs.children.length < 1) {
+				return;
 		}
 	
 		// assumption: if there is a type, it is the first child of the feature structure
@@ -376,7 +416,7 @@ function processFS(fs) {
 				featureName.setAttribute("x", 5); //padding
 				value.setAttribute("x", maxlengthFeatures + 10); //padding 
 
-				// value has label
+				// value is label
 				if (value.hasAttribute("label")) {
 						addLabel(value.getAttribute("label"),value);
 						labelWidth = value.lastElementChild.getBBox().width;
@@ -395,11 +435,13 @@ function processFS(fs) {
 						processFS(value.children[0]);
 						if (value.children[0].hasAttribute("label")) {
 								addLabel(value.children[0].getAttribute("label"),value);
-								labelWidth = value.lastElementChild.getBBox().width;
+								var label = value.lastElementChild;
+								var labelSize = label.getBBox();
+								labelWidth = labelSize.width;
 								// place fs after label
 								value.children[0].setAttribute("x",labelWidth + 5);
 								// center label vertically
-								value.lastElementChild.setAttribute("y",value.children[0].getBBox().height/2 - value.lastElementChild.getBBox().height/2 - 2); // padding 
+								label.setAttribute("y", value.children[0].getBBox().height/2 > labelSize.height/2 ? value.children[0].getBBox().height/2 - labelSize.height/2 - 2 : -2); // padding 
 						} 
 				}	
 				
@@ -754,7 +796,7 @@ function exportSVG (evt) {
 
 		var serializer = new XMLSerializer();
     var blob = new Blob([serializer.serializeToString(tree)],{type:'text/svg'});
-		saveAs(blob, treeName+".svg");
+		saveAs(blob, entryName+".svg");
 }
 
 function collapseAll () {

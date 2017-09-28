@@ -1,66 +1,130 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
 <grammar>
-  <entry name="n0Vn1pp-dir_0">
-    <family>n0Vn1pp-dir</family>
-    <trace>
-      <class>DirPrepObj</class>
-      <class>DirObj</class>
-      <class>VSpine</class>
-      <class>Subj</class>
-      <class>n0V</class>
-      <class>n0Vn1</class>
-      <class>n0Vn1pp-dir</class>
-    </trace>
-    <frame >
-      <fs coref="@Frame1" type="[causation,event]">
-        <f name="actor">
-          <sym value="@V2"/>
-        </f>
-        <f name="cause">
-          <fs coref="@Frame3" type="[activity,event]">
-            <f name="actor">
-              <sym value="@V2"/>
-            </f>
-            <f name="theme">
-              <sym value="@V4"/>
-            </f>
-          </fs>
-        </f>
-        <f name="effect">
-          <fs coref="@Frame5" type="[bounded-translocation,event,motion,translocation]">
-            <f name="goal">
-              <sym value="@V6"/>
-            </f>
-            <f name="mover">
-              <sym value="@V4"/>
-            </f>
-            <f name="path">
-              <sym value="@V7"/>
-            </f>
-          </fs>
-        </f>
-        <f name="theme">
-          <sym value="@V4"/>
-        </f>
-      </fs>
-    </frame>
-    <tree id="n0Vn1pp-dir_0">
+		<entry name="n0Vn1pp-dir_0">
+				<family>n0Vn1pp-dir</family>
+				<trace>
+						<class>DirPrepObj</class>
+						<class>DirObj</class>
+						<class>VSpine</class>
+						<class>Subj</class>
+						<class>n0V</class>
+						<class>n0Vn1</class>
+						<class>n0Vn1pp-dir</class>
+				</trace>
+				<frame >
+						<fs coref="@Frame1">
+								<ctype>
+										<type val="causation"/>
+										<type val="event"/>
+								</ctype>
+								<f name="actor">
+										<sym varname="@V2"/>
+								</f>
+								<f name="cause">
+										<fs coref="@Frame3">
+												<ctype>
+														<type val="activity"/>
+														<type val="event"/>
+												</ctype>
+												<f name="actor">
+														<sym value="@V2"/>
+												</f>
+												<f name="theme">
+														<sym varname="@V4"/>
+												</f>
+										</fs>
+								</f>
+								<f name="effect">
+										<fs coref="@Frame5">
+												<ctype>
+														<type val="bounded-translocation"/>
+														<type val="event"/>
+														<type val="motion"/>
+														<type val="translocation"/>
+												</ctype>
+												<f name="goal">
+														<sym varname="@V6"/>
+												</f>
+												<f name="mover">
+														<sym value="@V4"/>
+												</f>
+												<f name="path">
+														<sym varname="@V7"/>
+												</f>
+										</fs>
+								</f>
+								<f name="goal">
+										<sym varname="@V8"/>
+								</f>
+								<f name="theme">
+										<sym value="@V4"/>
+								</f>
+						</fs>
+						<fs coref="@Frame2">
+								<ctype>
+										<type val="causation"/>
+										<type val="event"/>
+								</ctype>
+								<f name="actor">
+										<sym varname="@V2"/>
+								</f>
+								<f name="cause">
+										<fs coref="@Frame3">
+												<ctype>
+														<type val="activity"/>
+														<type val="event"/>
+												</ctype>
+												<f name="actor">
+														<sym value="@V2"/>
+												</f>
+												<f name="theme">
+														<sym varname="@V4"/>
+												</f>
+										</fs>
+								</f>
+								<f name="effect">
+										<fs coref="@Frame5">
+												<ctype>
+														<type val="bounded-translocation"/>
+														<type val="event"/>
+														<type val="motion"/>
+														<type val="translocation"/>
+												</ctype>
+												<f name="goal">
+														<sym varname="@V6"/>
+												</f>
+												<f name="mover">
+														<sym value="@V4"/>
+												</f>
+												<f name="path">
+														<sym varname="@V7"/>
+												</f>
+										</fs>
+								</f>
+								<f name="goal">
+										<sym varname="@V8"/>
+								</f>
+								<f name="theme">
+										<sym value="@V4"/>
+								</f>
+						</fs>
+				</frame>
+				<tree id="n0Vn1pp-dir_0">
       <node type="std" name="S">
         <narg>
-          <fs coref="@AVM8">
+          <fs coref="@AVM9">
             <f name="cat">
               <sym value="s"/>
             </f>
           </fs>
         </narg>
-        <node type="subst" name="X2NP">
+        <node type="subst" name="X3NP">
           <narg>
-            <fs coref="@AVM9">
+            <fs coref="@AVM10">
               <f name="cat">
                 <sym value="np"/>
               </f>
               <f name="top">
-                <fs coref="@AVM10">
+                <fs coref="@AVM11">
                   <f name="i">
                     <sym varname="@V2"/>
                   </f>
@@ -69,13 +133,13 @@
             </fs>
           </narg>
         </node>
-        <node type="std" name="VP1VP">
+        <node type="std" name="VP1X2VP">
           <narg>
-            <fs coref="@AVM11">
+            <fs coref="@AVM12">
               <f name="bot">
-                <fs coref="@AVM12">
+                <fs coref="@AVM13">
                   <f name="e">
-                    <fs coref="@Frame1" type="[causation,event]"/>
+                    <fs coref="@Frame1"/>
                   </f>
                   <f name="path">
                     <sym varname="@V7"/>
@@ -89,11 +153,11 @@
           </narg>
           <node type="std" name="VP2VPX1VP">
             <narg>
-              <fs coref="@AVM13">
+              <fs coref="@AVM14">
                 <f name="bot">
-                  <fs coref="@AVM14">
+                  <fs coref="@AVM15">
                     <f name="e">
-                      <fs coref="@Frame1" type="[causation,event]"/>
+                      <fs coref="@Frame1"/>
                     </f>
                     <f name="path">
                       <sym varname="@V7"/>
@@ -107,14 +171,14 @@
             </narg>
             <node type="anchor" name="VVVV">
               <narg>
-                <fs coref="@AVM15">
+                <fs coref="@AVM16">
                   <f name="cat">
                     <sym value="v"/>
                   </f>
                   <f name="top">
-                    <fs coref="@AVM16">
+                    <fs coref="@AVM17">
                       <f name="e">
-                        <fs coref="@Frame1" type="[causation,event]"/>
+                        <fs coref="@Frame1"/>
                       </f>
                     </fs>
                   </f>
@@ -123,14 +187,14 @@
             </node>
             <node type="subst" name="NP">
               <narg>
-                <fs coref="@AVM17">
+                <fs coref="@AVM18">
                   <f name="cat">
                     <sym value="np"/>
                   </f>
                   <f name="top">
-                    <fs coref="@AVM18">
+                    <fs coref="@AVM19">
                       <f name="i">
-                        <sym varname="@V4"/>
+                        <sym varname="@V8"/>
                       </f>
                     </fs>
                   </f>
@@ -140,14 +204,14 @@
           </node>
           <node type="subst" name="PP">
             <narg>
-              <fs coref="@AVM19">
+              <fs coref="@AVM20">
                 <f name="cat">
                   <sym value="pp"/>
                 </f>
                 <f name="top">
-                  <fs coref="@AVM20">
+                  <fs coref="@AVM21">
                     <f name="e">
-                      <fs coref="@Frame5" type="[bounded-translocation,event,motion,translocation]"/>
+                      <fs coref="@Frame5"/>
                     </f>
                     <f name="i">
                       <sym varname="@V6"/>
