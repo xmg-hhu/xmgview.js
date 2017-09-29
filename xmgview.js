@@ -1,6 +1,6 @@
 // xmgview.js
 
-// Timestamp: 2017-09-28 Thu 
+// Timestamp: 2017-09-29 Fri
 
 // Draws beautiful SVG trees and feature structures based on XMG's boring XML output.
 // Written by Timm Lichte (lichte@phil.hhu.de).
@@ -16,23 +16,11 @@ var offsetyNode = 50;
 // global variables 
 var svgRoot,										// root element of the svg tree
 		entryName,									// name of the grammar entry 
-		treeRoot;										// root node of the syntactic tree
+		dimensionRoot;										// root node of the syntactic tree
 
 // draw tree (standalone) 
-function init(){
-		svgRoot = document.getElementsByTagName("svg")[0];
-		entryName = document.getElementsByTagName("entry")[0].getAttribute("name");
-
-		transformTree(document.getElementsByTagName("tree")[0],svgRoot);  // TODO: remove second argument?
-		for (var i = 0; i < svgRoot.children.length; i++) {
-				if (svgRoot.children[i].getAttribute("type") == "tree") {
-						treeRoot = svgRoot.children[i];
-				}
-		}	
-		
-		svgRoot.removeChild(document.getElementsByTagName("grammar")[0]);
-		processTree(svgRoot);
-		addButtons(svgRoot);
+function standaloneTree(){
+		makeTree(document.getElementsByTagName("svg")[0],document.getElementsByTagName("entry")[0])
 }
 
 // draw frame (standalone)
@@ -50,12 +38,12 @@ function makeTree(target,entry) {
 		transformTree(entry.getElementsByTagName("tree")[0],svgRoot);  // TODO: remove second argument?
 		for (var i = 0; i < svgRoot.children.length; i++) {
 				if (svgRoot.children[i].getAttribute("type") == "tree") {
-						treeRoot = svgRoot.children[i];
+						dimensionRoot = svgRoot.children[i];
 				}
 		}	
 		
 		processTree(svgRoot);
-		addButtons(svgRoot);
+		addTreeButtons(svgRoot);
 }
 
 // makeFrame is used in the webgui
@@ -66,32 +54,34 @@ function makeFrame(target,entry) {
 		var frame = entry.getElementsByTagName("frame")[0];
 		var ypoint = 3;
 
+		var new_frame = document.createElementNS("http://www.w3.org/2000/svg","svg");
+		new_frame.setAttribute("type","frame");
+		svgRoot.appendChild(new_frame);
+		dimensionRoot = new_frame;
+		
 		// frame descriptions may consist of separate components
 		for (var i = 0; i < frame.children.length; i++) {
-				transformFS(frame.children[i],svgRoot);  // TODO: remove second argument?			
+				transformFS(frame.children[i],new_frame);  // TODO: remove second argument?			
 		}
-		for (var i = 0; i < svgRoot.children.length; i++) {
-				if (svgRoot.children[i].getAttribute("type") == "fs") {
-						var fs = svgRoot.children[i];
+		for (var i = 0; i < new_frame.children.length; i++) {
+				if (new_frame.children[i].getAttribute("type") == "fs") {
+						var fs = new_frame.children[i];
 						processFS(fs);
 						fs.setAttribute("y",ypoint);  // paddin
 						var fsHeight = fs.getBBox().height;
 						// plot label of overall frame 
 						if (fs.hasAttribute("label")) {
-								addLabel(fs.getAttribute("label"),svgRoot);
-								var label = svgRoot.lastElementChild;
+								addLabel(fs.getAttribute("label"),new_frame);
+								var label = new_frame.lastElementChild;
 								var labelSize = label.getBBox();
 								fs.setAttribute("x",labelSize.width + 5);  // padding
-								svgRoot.lastElementChild.setAttribute("y",fsHeight > labelSize.height ? fsHeight/2 - labelSize.height/2 + ypoint : ypoint);
+								new_frame.lastElementChild.setAttribute("y",fsHeight > labelSize.height ? fsHeight/2 - labelSize.height/2 + ypoint : ypoint);
 						}
 						ypoint += fsHeight + 20;  // padding
 				}
 		}
 		
-		// svgRoot.removeChild(document.getElementsByTagName("grammar")[0]);
-
-		// addButtons(svgRoot); // FIXME
-
+		addFrameButtons(svgRoot); 
 }
 
 // turn inTree into an svg element and make it daughter of outParent
@@ -665,7 +655,7 @@ function collapseExpandNodeEvent (evt) {
 				var element = svgRoot.getElementById("latexExport");
 				element.parentNode.removeChild(element);
 				// draw new latexExport
-				exportLatex();
+				exportLatex("tree");
 		}
 }  
 
@@ -706,15 +696,15 @@ function collapseExpandNode (ceswitch) {
 
 } 
 
-function addButtons (target) {
+function addTreeButtons (target) {
 		var tree = target.getElementsByTagName("svg")[0];
 		var xpos;
 
-		var buttonExportSVG = generateButton("SVG","exportSVG(evt)",target);
+		var buttonExportSVG = generateButton("SVG","exportSVG(evt,\"tree\")",target);
 		buttonExportSVG.setAttribute("x", 0);
 		xpos = buttonExportSVG.getBBox().width+5;  // padding
 
-		var buttonExportLatex = generateButton("LaTeX","toggleLatexButton()",target);
+		var buttonExportLatex = generateButton("LaTeX","toggleLatexButton(\"tree\")",target);
 		buttonExportLatex.setAttribute("x", xpos);
 		buttonExportLatex.setAttribute("id","buttonLatex");
 		xpos += buttonExportLatex.getBBox().width+5; // padding
@@ -728,6 +718,23 @@ function addButtons (target) {
 
 		tree.setAttribute("y", buttonExportSVG.getBBox().height+10); // padding
 }
+
+function addFrameButtons (target) {
+		var frame = target.getElementsByTagName("svg")[0];
+		var xpos;
+
+		var buttonExportSVG = generateButton("SVG","exportSVG(evt,\"frame\")",target);
+		buttonExportSVG.setAttribute("x", 0);
+		xpos = buttonExportSVG.getBBox().width+5;  // padding
+
+		var buttonExportLatex = generateButton("LaTeX","toggleLatexButton(\"frame\")",target);
+		buttonExportLatex.setAttribute("x", xpos);
+		buttonExportLatex.setAttribute("id","buttonLatex");
+		xpos += buttonExportLatex.getBBox().width+5; // padding
+		
+		frame.setAttribute("y", buttonExportSVG.getBBox().height+10); // padding
+}
+
 
 function generateButton(label,action,target) {
 		var button = document.createElementNS("http://www.w3.org/2000/svg","svg");
@@ -768,11 +775,11 @@ function generateButton(label,action,target) {
 		return(button);
 }
 
-function exportSVG (evt) {
+function exportSVG (evt,targetType) {
 		var tree;
 		var siblings = evt.target.parentNode.parentNode.children;
 		for (var i = 0;  i< siblings.length; i++) {
-				if (siblings[i].getAttribute("type")=="tree") {
+				if (siblings[i].getAttribute("type")==targetType) {
 						tree = siblings[i].cloneNode(true);
 				}
 		}
@@ -819,7 +826,7 @@ function collapseAll () {
 				var element = svgRoot.getElementById("latexExport");
 				element.parentNode.removeChild(element);
 				// draw new latexExport
-				exportLatex();
+				exportLatex("tree");
 		}
 }
 
@@ -844,7 +851,7 @@ function expandAll () {
 				var element = svgRoot.getElementById("latexExport");
 				element.parentNode.removeChild(element);
 				// draw new latexExport
-				exportLatex();
+				exportLatex("tree");
 		}
 
 }
@@ -877,14 +884,14 @@ function toggleButtonDisplay (button) {
 }
 
 
-function toggleLatexButton () {
+function toggleLatexButton (targetType) {
 		var latexButton = document.getElementById("buttonLatex");
 		toggleButtonDisplay(latexButton);
-		exportLatex();
+		exportLatex(targetType);
 }
 
 
-function exportLatex () {
+function exportLatex (targetType) {
 		var texStringIndent = "\t";
 
 		// delete latexExport element if it already exists
@@ -911,10 +918,16 @@ function exportLatex () {
 		textArea.setAttribute("disabled","false");
 		textArea.setAttribute("rows","25");
 		textArea.setAttribute("cols","50");
-		textArea.innerHTML = "\\Forest{\n\t" + texifyTree(treeRoot,texStringIndent) + "\n}\n";
 
-		foreignObject.setAttribute("y", treeRoot.getAttribute("y"));
-		foreignObject.setAttribute("x", treeRoot.getBBox().width + 20);
+		if (targetType == "tree") {
+				textArea.innerHTML = "\\Forest{\n\t" + texifyTree(dimensionRoot,texStringIndent) + "\n}\n";
+		}
+		if (targetType == "frame") {
+				textArea.innerHTML = texifyFrame(dimensionRoot,texStringIndent) + "\n";
+		}
+		
+		foreignObject.setAttribute("y", dimensionRoot.getAttribute("y"));
+		foreignObject.setAttribute("x", dimensionRoot.getBBox().width + 20);
 }
 
 
@@ -935,6 +948,20 @@ function texifyTree (tree,texStringIndent) {
 		}
 
 		texString += "\]";
+		return(texString);
+}
+
+function texifyFrame (frame,texStringIndent) {
+		var texString = "";
+		for (var i = 0; i < frame.children.length; i++) {
+				if (frame.children[i].getAttribute("type")=="fs") {
+						texString +=
+								"\\begin{avm}\n" +
+								(frame.children[i].hasAttribute("label") ? "\\@{"+frame.children[i].getAttribute("label")+"}" : "") +
+								texifyFS(frame.children[i],texStringIndent) +
+								"\n\\end{avm}\n\n";
+				}
+		}
 		return(texString);
 }
 
@@ -969,6 +996,9 @@ function texifyNode (node) {
 
 function texifyFS (fs){
 		var texString = "\\[";
+		if (fs.hasAttribute("fstype")) {
+				texString += "\\asort{" + fs.getAttribute("fstype") + "}";
+		}
 		for (var i = 0; i < fs.children.length; i++) {
 				var feature = fs.children[i];
 				if (feature.getAttribute("type") == "feature") {

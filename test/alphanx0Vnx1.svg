@@ -2,7 +2,7 @@
 		 xmlns="http://www.w3.org/2000/svg"
 		 xmlns:xlink="http://www.w3.org/1999/xlink"
 		 id="alphanx0Vnx1"
-		 onload="init()">
+		 onload="standaloneTree()">
 
 	<script type="text/javascript" xlink:href="../xmgview.js" />
 
