@@ -15,8 +15,7 @@ var offsetyNode = 50;
 
 // global variables 
 var svgRoot,										// root element of the svg tree
-		entryName,									// name of the grammar entry 
-		dimensionRoot;										// root node of the syntactic tree
+		entryName;									// name of the grammar entry 
 
 // draw tree (standalone) 
 function standaloneTree(){
@@ -33,12 +32,14 @@ function standaloneFrame() {
 function makeTree(target,entry) {
 		entryName = entry.getAttribute("name");
 		svgRoot = target;
+		var syntree;
 
 		// turn tree elements into daughters of the SVG root
 		transformTree(entry.getElementsByTagName("tree")[0],svgRoot);  // TODO: remove second argument?
 		for (var i = 0; i < svgRoot.children.length; i++) {
 				if (svgRoot.children[i].getAttribute("type") == "tree") {
-						dimensionRoot = svgRoot.children[i];
+						syntree = svgRoot.children[i];
+						syntree.setAttribute("id","synTree");
 				}
 		}	
 		
@@ -57,7 +58,6 @@ function makeFrame(target,entry) {
 		var new_frame = document.createElementNS("http://www.w3.org/2000/svg","svg");
 		new_frame.setAttribute("type","frame");
 		svgRoot.appendChild(new_frame);
-		dimensionRoot = new_frame;
 		
 		// frame descriptions may consist of separate components
 		for (var i = 0; i < frame.children.length; i++) {
@@ -649,13 +649,15 @@ function collapseExpandNodeEvent (evt) {
 		var ceswitch = evt.target.parentNode;
 		collapseExpandNode(ceswitch);
 
+		var object = document.getElementById("synTree");
+
 		// adapt latex export if necessary
-		if (svgRoot.getElementById("latexExport")) {
+		if (object.parentNode.getElementById("latexExport")) {
 				// remove element latexExport
-				var element = svgRoot.getElementById("latexExport");
+				var element = object.parentNode.getElementById("latexExport");
 				element.parentNode.removeChild(element);
 				// draw new latexExport
-				exportLatex("tree");
+				exportLatex(object);
 		}
 }  
 
@@ -700,20 +702,20 @@ function addTreeButtons (target) {
 		var tree = target.getElementsByTagName("svg")[0];
 		var xpos;
 
-		var buttonExportSVG = generateButton("SVG","exportSVG(evt,\"tree\")",target);
+		var buttonExportSVG = generateButton("SVG","pressedButtonExportSVG(evt)",target);
 		buttonExportSVG.setAttribute("x", 0);
 		xpos = buttonExportSVG.getBBox().width+5;  // padding
 
-		var buttonExportLatex = generateButton("LaTeX","toggleLatexButton(\"tree\")",target);
+		var buttonExportLatex = generateButton("LaTeX","pressedButtonExportLatex(evt)",target);
 		buttonExportLatex.setAttribute("x", xpos);
 		buttonExportLatex.setAttribute("id","buttonLatex");
 		xpos += buttonExportLatex.getBBox().width+5; // padding
 
-		var buttonCollapseAll = generateButton("collapse","collapseAll(evt)",target);
+		var buttonCollapseAll = generateButton("collapse","pressedButtonCollapseAll(evt)",target);
 		buttonCollapseAll.setAttribute("x", xpos);
 		xpos += buttonCollapseAll.getBBox().width+5; // padding
 
-		var buttonExpandAll = generateButton("expand","expandAll(evt)",target);
+		var buttonExpandAll = generateButton("expand","pressedButtonExpandAll(evt)",target);
 		buttonExpandAll.setAttribute("x", xpos);
 
 		tree.setAttribute("y", buttonExportSVG.getBBox().height+10); // padding
@@ -723,11 +725,11 @@ function addFrameButtons (target) {
 		var frame = target.getElementsByTagName("svg")[0];
 		var xpos;
 
-		var buttonExportSVG = generateButton("SVG","exportSVG(evt,\"frame\")",target);
+		var buttonExportSVG = generateButton("SVG","pressedButtonExportSVG(evt)",target);
 		buttonExportSVG.setAttribute("x", 0);
 		xpos = buttonExportSVG.getBBox().width+5;  // padding
 
-		var buttonExportLatex = generateButton("LaTeX","toggleLatexButton(\"frame\")",target);
+		var buttonExportLatex = generateButton("LaTeX","pressedButtonExportLatex(evt)",target);
 		buttonExportLatex.setAttribute("x", xpos);
 		buttonExportLatex.setAttribute("id","buttonLatex");
 		xpos += buttonExportLatex.getBBox().width+5; // padding
@@ -775,23 +777,29 @@ function generateButton(label,action,target) {
 		return(button);
 }
 
-function exportSVG (evt,targetType) {
-		var tree;
+function pressedButtonExportSVG (evt) {
+		var object;
 		var siblings = evt.target.parentNode.parentNode.children;
 		for (var i = 0;  i< siblings.length; i++) {
-				if (siblings[i].getAttribute("type")==targetType) {
-						tree = siblings[i].cloneNode(true);
+				if (siblings[i].getAttribute("type")=="tree" || siblings[i].getAttribute("type")=="frame") {
+						object = siblings[i];
 				}
 		}
+
+		exportSVG(object)
+}
+
+function exportSVG (object) {
+		var clone = object.cloneNode(true);
 		
 		// clean-up SVG: remove ce-switch and onclick-stuff
-		var svgElements = tree.getElementsByTagName("svg");
+		var svgElements = clone.getElementsByTagName("svg");
 		for (var i = 0; i<svgElements.length; i++) {
 				if (svgElements[i].getAttribute("type") == "ce-switch") {
 						svgElements[i].parentNode.removeChild(svgElements[i]);
 				}
 		}
-		var rectElements = tree.getElementsByTagName("rect");
+		var rectElements = clone.getElementsByTagName("rect");
 		for (var i = 0; i< rectElements.length; i++) {
 				if (rectElements[i].hasAttribute("onclick")) {
 						rectElements[i].removeAttribute("onclick");
@@ -802,12 +810,19 @@ function exportSVG (evt,targetType) {
 		}
 
 		var serializer = new XMLSerializer();
-    var blob = new Blob([serializer.serializeToString(tree)],{type:'text/svg'});
+    var blob = new Blob([serializer.serializeToString(clone)],{type:'text/svg'});
 		saveAs(blob, entryName+".svg");
 }
 
-function collapseAll () {
-		var all = document.getElementsByTagName("*");
+function pressedButtonCollapseAll (evt) {
+		var object;
+		var siblings = evt.target.parentNode.parentNode.children;
+		for (var i = 0;  i< siblings.length; i++) {
+				if (siblings[i].getAttribute("type")=="tree") {
+						object = siblings[i];
+				}
+		}
+		var all = object.getElementsByTagName("*");
 		for (var i=0, max=all.length; i < max; i++) {
 				
 				if (all[i].hasAttribute("type") && all[i].getAttribute("type") == "ce-switch" && all[i].getAttribute("ce-status") == "expanded") {
@@ -821,18 +836,26 @@ function collapseAll () {
 		}
 
 		// adapt latex export if necessary
-		if (svgRoot.getElementById("latexExport")) {
+		if (object.parentNode.getElementById("latexExport")) {
 				// remove element latexExport
-				var element = svgRoot.getElementById("latexExport");
+				var element = object.parentNode.getElementById("latexExport");
 				element.parentNode.removeChild(element);
 				// draw new latexExport
-				exportLatex("tree");
+				exportLatex(object);
 		}
 }
 
 
-function expandAll () {
-		var all = document.getElementsByTagName("*");
+function pressedButtonExpandAll (evt) {
+		var object;
+		var siblings = evt.target.parentNode.parentNode.children;
+		for (var i = 0;  i< siblings.length; i++) {
+				if (siblings[i].getAttribute("type")=="tree" || siblings[i].getAttribute("type")=="frame") {
+						object = siblings[i];
+				}
+		}
+		
+		var all = object.getElementsByTagName("*");
 		for (var i=0, max=all.length; i < max; i++) {
 											
 				if (all[i].hasAttribute("type") && all[i].getAttribute("type") == "ce-switch" && all[i].getAttribute("ce-status") == "collapsed") {
@@ -846,14 +869,13 @@ function expandAll () {
 		}
 
 		// adapt latex export if necessary
-		if (svgRoot.getElementById("latexExport")) {
+		if (object.parentNode.getElementById("latexExport")) {
 				// remove element latexExport
-				var element = svgRoot.getElementById("latexExport");
+				var element = object.parentNode.getElementById("latexExport");
 				element.parentNode.removeChild(element);
 				// draw new latexExport
-				exportLatex("tree");
+				exportLatex(object);
 		}
-
 }
 
 
@@ -884,20 +906,28 @@ function toggleButtonDisplay (button) {
 }
 
 
-function toggleLatexButton (targetType) {
-		var latexButton = document.getElementById("buttonLatex");
+function pressedButtonExportLatex (evt) {
+		var object;
+		var siblings = evt.target.parentNode.parentNode.children;
+		for (var i = 0;  i< siblings.length; i++) {
+				if (siblings[i].getAttribute("type")=="tree" || siblings[i].getAttribute("type")=="frame") {
+						object = siblings[i];
+				}
+		}
+		
+		var latexButton = object.parentNode.getElementById("buttonLatex");
 		toggleButtonDisplay(latexButton);
-		exportLatex(targetType);
+		exportLatex(object);
 }
 
 
-function exportLatex (targetType) {
+function exportLatex (object) {
 		var texStringIndent = "\t";
 
 		// delete latexExport element if it already exists
-		if (svgRoot.getElementById("latexExport")) {
+		if (object.parentNode.getElementById("latexExport")) {
 				// remove element latexExport
-				var element = svgRoot.getElementById("latexExport");
+				var element = object.parentNode.getElementById("latexExport");
 				element.parentNode.removeChild(element);
 				return;
 		}
@@ -908,7 +938,7 @@ function exportLatex (targetType) {
 		foreignObject.setAttribute("id","latexExport");
 		foreignObject.setAttribute("width","100%");
 		foreignObject.setAttribute("height","100%");
-		svgRoot.appendChild(foreignObject);
+		object.parentNode.appendChild(foreignObject);
 		
 		var bodyElement = document.createElementNS("http://www.w3.org/1999/xhtml","body");
 		foreignObject.appendChild(bodyElement);
@@ -919,15 +949,15 @@ function exportLatex (targetType) {
 		textArea.setAttribute("rows","25");
 		textArea.setAttribute("cols","50");
 
-		if (targetType == "tree") {
-				textArea.innerHTML = "\\Forest{\n\t" + texifyTree(dimensionRoot,texStringIndent) + "\n}\n";
+		if (object.getAttribute("type") == "tree") {
+				textArea.innerHTML = "\\Forest{\n\t" + texifyTree(object,texStringIndent) + "\n}\n";
 		}
-		if (targetType == "frame") {
-				textArea.innerHTML = texifyFrame(dimensionRoot,texStringIndent) + "\n";
+		if (object.getAttribute("type") == "frame") {
+				textArea.innerHTML = texifyFrame(object,texStringIndent) + "\n";
 		}
 		
-		foreignObject.setAttribute("y", dimensionRoot.getAttribute("y"));
-		foreignObject.setAttribute("x", dimensionRoot.getBBox().width + 20);
+		foreignObject.setAttribute("y", object.getAttribute("y"));
+		foreignObject.setAttribute("x",  object.getAttribute("x"));
 }
 
 
