@@ -2,7 +2,7 @@
 
 // Timestamp: 2017-09-29 Fri
 
-// Draws beautiful SVG trees and feature structures based on XMG's boring XML output.
+// Draws beautiful, interactive SVG trees and feature structures based on XMG's boring XML output.
 // Written by Timm Lichte (lichte@phil.hhu.de).
 
 // TODO: revisit padding variables
