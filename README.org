@@ -1,4 +1,8 @@
 * xmgview.js
 
-#+ATTR_ORG: :width 1000
+Draws beautiful SVG trees and feature structures based on XMG's boring XML output.
+Written by Timm Lichte (lichte@phil.hhu.de).
+
+** Example output
+
 [[file:example.svg][file:example.svg]]
