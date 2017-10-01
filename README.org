@@ -1,4 +1,4 @@
 * xmgview.js
 
-#+ATTR_ORG: :width 100
+#+ATTR_ORG: :width 1000
 [[file:example.svg][file:example.svg]]
