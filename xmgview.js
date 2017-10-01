@@ -39,7 +39,7 @@ function makeTree(target,entry) {
 		for (var i = 0; i < svgRoot.children.length; i++) {
 				if (svgRoot.children[i].getAttribute("type") == "tree") {
 						syntree = svgRoot.children[i];
-						syntree.setAttribute("id","synTree");
+						syntree.setAttribute("id","synTreeSVG");
 				}
 		}	
 		
@@ -57,6 +57,7 @@ function makeFrame(target,entry) {
 
 		var new_frame = document.createElementNS("http://www.w3.org/2000/svg","svg");
 		new_frame.setAttribute("type","frame");
+		new_frame.setAttribute("id","semFrameSVG");
 		svgRoot.appendChild(new_frame);
 		
 		// frame descriptions may consist of separate components
@@ -649,7 +650,7 @@ function collapseExpandNodeEvent (evt) {
 		var ceswitch = evt.target.parentNode;
 		collapseExpandNode(ceswitch);
 
-		var object = document.getElementById("synTree");
+		var object = document.getElementById("synTreeSVG");
 
 		// adapt latex export if necessary
 		if (object.parentNode.getElementById("latexExport")) {
