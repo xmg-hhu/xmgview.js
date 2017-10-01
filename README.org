@@ -1,3 +1,4 @@
 * xmgview.js
 
+#+attr_html: :width 100%
 [[file:example.svg][file:example.svg]]
