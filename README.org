@@ -5,4 +5,4 @@ Written by Timm Lichte (lichte@phil.hhu.de).
 
 ** Example output
 
-[[file:example.svg][file:example.svg]]
+[[example.svg]]
