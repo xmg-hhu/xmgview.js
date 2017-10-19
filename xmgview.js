@@ -34,6 +34,15 @@ function makeTree(target,entry) {
 		svgRoot = target;
 		var syntree;
 
+		// if there is no tree element, create an empty one and stop here
+		if (entry.getElementsByTagName("tree")[0] == null) {
+				var empty_tree = document.createElementNS("http://www.w3.org/2000/svg","svg");
+				empty_tree.setAttribute("type","tree");
+				empty_tree.setAttribute("id","synTreeSVG");
+				svgRoot.appendChild(empty_tree);
+				return;
+		}
+		
 		// turn tree elements into daughters of the SVG root
 		transformTree(entry.getElementsByTagName("tree")[0],svgRoot);  // TODO: remove second argument?
 		for (var i = 0; i < svgRoot.children.length; i++) {
@@ -52,13 +61,19 @@ function makeFrame(target,entry) {
 		entryName = entry.getAttribute("name");
 		svgRoot = target;
 
-		var frame = entry.getElementsByTagName("frame")[0];
-		var ypoint = 3;
-
+		// add new svg element that contains the frame 
 		var new_frame = document.createElementNS("http://www.w3.org/2000/svg","svg");
 		new_frame.setAttribute("type","frame");
 		new_frame.setAttribute("id","semFrameSVG");
 		svgRoot.appendChild(new_frame);
+
+		// if there is no frame element, stop here
+		if (entry.getElementsByTagName("frame")[0] == null) {
+				return;
+		}
+		
+		var frame = entry.getElementsByTagName("frame")[0];
+		var ypoint = 3;
 		
 		// frame descriptions may consist of separate components
 		for (var i = 0; i < frame.children.length; i++) {
