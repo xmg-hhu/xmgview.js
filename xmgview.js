@@ -186,6 +186,23 @@ function transformFS(inFS,outParent) {
 						transformFS(child.children[0],new_value);
 						new_feature.appendChild(new_value);
 				}
+
+				if (child.children[0].tagName == "vAlt") {
+						var new_value = document.createElementNS("http://www.w3.org/2000/svg","svg");
+						new_value.setAttribute("type","value");
+						var	new_valueText = document.createElementNS("http://www.w3.org/2000/svg","text");
+						new_valueText.innerHTML="@{"; 
+						for(var ia = 0; ia<child.children[0].children.length;ia++){
+							if(ia>0){
+								new_valueText.innerHTML=new_valueText.innerHTML+",";
+							}
+						new_valueText.innerHTML=new_valueText.innerHTML+child.children[0].children[ia].getAttribute("value");
+						}
+						new_valueText.innerHTML=new_valueText.innerHTML+"}";	
+						new_value.appendChild(new_valueText);
+						new_feature.appendChild(new_value);
+
+				}
 		}
 }
 
@@ -200,7 +217,7 @@ function reorderFS(node) {
 				if (featureName == "bot") { bot = i; }
 				if (featureName == "top") { top = i; }
 				if (featureName == "cat") { 
-						node.setAttribute("cat",fs.children[i].children[1].children[0].innerHTML); 
+					node.setAttribute("cat",fs.children[i].children[1].children[0].innerHTML); 
 				}
 				if (featureName == "phon") { 
 						node.setAttribute("phon",fs.children[i].children[1].children[0].innerHTML); 
@@ -416,7 +433,7 @@ function processFS(fs) {
 		for (var i = firstFeatureChild; i < fs.children.length; i++){
 				var feature = fs.children[i];
 				var featureName = feature.children[0];
-				var value = feature.children[1];
+				value = feature.children[1];
 				var labelWidth = 0;
 
 				featureName.setAttribute("x", 5); //padding
