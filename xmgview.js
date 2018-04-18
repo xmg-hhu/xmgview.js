@@ -151,7 +151,7 @@ function transformFS(inFS,outParent) {
 						ctypeArray.push(ctype.children[i].getAttribute("val"));
 				}
 				new_fs.setAttribute("fstype",ctypeArray.toString());
-				inFS.removeChild(ctype); // to make things easier when dealing with feature-value pairs afterwards
+				//inFS.removeChild(ctype); // to make things easier when dealing with feature-value pairs afterwards
 		}
 		
 		outParent.appendChild(new_fs);
@@ -159,7 +159,8 @@ function transformFS(inFS,outParent) {
 		// feature-value pairs
 		for (var i = 0; i < inFS.children.length; i++){
 				var child = inFS.children.item(i);
-
+				if(child.getAttribute("name")==null)
+					continue;
 				var new_feature = document.createElementNS("http://www.w3.org/2000/svg","svg");
 				new_feature.setAttribute("type","feature");
 				new_fs.appendChild(new_feature);
