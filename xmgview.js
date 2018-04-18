@@ -65,13 +65,17 @@ function makeFrame(target,entry) {
 		var new_frame = document.createElementNS("http://www.w3.org/2000/svg","svg");
 		new_frame.setAttribute("type","frame");
 		new_frame.setAttribute("id","semFrameSVG");
-		svgRoot.appendChild(new_frame);
-
 		// if there is no frame element, stop here
 		if (entry.getElementsByTagName("frame")[0] == null) {
+				//console.log("No frame to display[0]");
 				return;
-		}
-		
+		}	
+		if (entry.getElementsByTagName("frame")[0].children.length==0) {
+				//console.log("No frame to display[1]");
+				return;
+				
+		}	
+		svgRoot.appendChild(new_frame);
 		var frame = entry.getElementsByTagName("frame")[0];
 		var ypoint = 3;
 		
