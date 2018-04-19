@@ -448,7 +448,6 @@ function processFS(fs) {
 				if (value.hasAttribute("label")) {
 						addLabel(value.getAttribute("label"),value);
 						labelWidth = value.lastElementChild.getBBox().width;
-						// console.log("bla");
 				}
 
 				// value is text element
@@ -460,16 +459,27 @@ function processFS(fs) {
 
 				// value is fs
 				if (value.children[0].getAttribute("type")=="fs") {
+						var getlabel = value.children[0].getAttribute("label");
+						var oldvalue = value;
 						processFS(value.children[0]);
-						if (value.children[0].hasAttribute("label")) {
-								addLabel(value.children[0].getAttribute("label"),value);
+						if (getlabel != null) {
+								addLabel(getlabel,oldvalue);
 								var label = value.lastElementChild;
 								var labelSize = label.getBBox();
 								labelWidth = labelSize.width;
+								labelHeight = labelSize.height;
+
+								var oldlabel = oldvalue.lastElementChild;
+								var oldlabelSize = oldlabel.getBBox();
+								oldlabelWidth = oldlabelSize.width;
+								oldlabelHeight = oldlabelSize.height;
+
 								// place fs after label
-								value.children[0].setAttribute("x",labelWidth + 5);
+								oldvalue.children[0].setAttribute("x",oldlabelWidth + 5);
 								// center label vertically
-								label.setAttribute("y", value.children[0].getBBox().height/2 > labelSize.height/2 ? value.children[0].getBBox().height/2 - labelSize.height/2 - 2 : -2); // padding 
+								//label.setAttribute("y", value.children[0].getBBox().height/2 > labelSize.height/2 ? value.children[0].getBBox().height/2 - labelSize.height/2 - 2 : -2); // padding 
+								// here should be centered
+								oldlabel.setAttribute("y", oldvalue.getBBox().height/2 - oldlabelHeight/2); // padding 
 						} 
 				}	
 				
@@ -735,7 +745,7 @@ function collapseExpandNode (ceswitch) {
 		redrawTree(node.parentNode);  // remove all edges; draw new ones 
 
 } 
-
+	
 function addTreeButtons (target) {
 		var tree = target.getElementsByTagName("svg")[0];
 		var xpos;
@@ -756,6 +766,7 @@ function addTreeButtons (target) {
 		var buttonExpandAll = generateButton("expand","pressedButtonExpandAll(evt)",target);
 		buttonExpandAll.setAttribute("x", xpos);
 
+		if(tree!=null)
 		tree.setAttribute("y", buttonExportSVG.getBBox().height+10); // padding
 }
 
