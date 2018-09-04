@@ -24,7 +24,8 @@ function standaloneTree(){
 
 // draw frame (standalone)
 function standaloneFrame() {
-		makeFrame(document.getElementsByTagName("svg")[0],document.getElementsByTagName("entry")[0]);
+	makeFrame(document.getElementsByTagName("svg")[0],document.getElementsByTagName("entry")[0]);
+    
 }
 
 
@@ -58,6 +59,7 @@ function makeTree(target,entry) {
 
 // makeFrame is used in the webgui
 function makeFrame(target,entry) {
+    //console.log("Here make Frame");
 		entryName = entry.getAttribute("name");
 		svgRoot = target;
 
@@ -67,11 +69,13 @@ function makeFrame(target,entry) {
 		new_frame.setAttribute("id","semFrameSVG");
 		// if there is no frame element, stop here
 		if (entry.getElementsByTagName("frame")[0] == null) {
-				//console.log("No frame to display[0]");
-				return;
+		    console.log("No frame to display, but maybe pred");
+		    // this should be done in script.js, but I somehow cannot make changes in it
+		    makePred(target,entry);
+		    return;
 		}	
 		if (entry.getElementsByTagName("frame")[0].children.length==0) {
-				//console.log("No frame to display[1]");
+				console.log("No frame to display (frame dimension is here but empty)");
 				return;
 				
 		}	
@@ -104,6 +108,78 @@ function makeFrame(target,entry) {
 		addFrameButtons(svgRoot); 
 }
 
+function makePred(target,entry){
+    //console.log("Here make Pred");
+    entryName = entry.getAttribute("name");
+    svgRoot = target;
+    var new_pred = document.createElementNS("http://www.w3.org/2000/svg","svg");
+    new_pred.setAttribute("type","pred");
+    new_pred.setAttribute("id","sempredSVG");
+    svgRoot.appendChild(new_pred);
+    var pred = entry.getElementsByTagName("semantics")[0];
+    var ypoint = 3;
+
+    var text = document.createElementNS("http://www.w3.org/2000/svg","text");
+    text.setAttribute("font-size",25);
+    text.setAttribute("text-anchor","start");
+    text.setAttribute("x",2);
+    text.setAttribute("y","1.2em");
+    text.innerHTML = "";
+    
+    // semantics is a list of litterals
+    for (var i = 0; i < pred.children.length; i++){
+	var litteral = pred.children[i];
+	// negation is here:
+	// litteral.getAttribute("negated")
+	// label is litteral.children[0]
+	// predicate is litteral.children[1]
+	// args are litteral.children[2...]
+
+	if (litteral.children[1].children[0].hasAttribute("varname")) {
+	    var predicate = litteral.children[1].children[0].getAttribute("varname").replace("@","");
+	}
+	else{
+	    var predicate = litteral.children[1].children[0].getAttribute("value");
+	}
+
+	if (litteral.children[0].children[0].hasAttribute("varname")){
+	    var label = litteral.children[0].children[0].getAttribute("varname").replace("@","");
+	}
+	else{
+	    // for some reason values can be variables in labels
+	    var label = litteral.children[0].children[0].getAttribute("value").replace("@","");
+	}
+	 
+	if (litteral.children[2].children[0].hasAttribute("varname")){
+	    var arg0 = litteral.children[2].children[0].getAttribute("varname").replace("@","");
+	}
+	else{
+	    var arg0 = litteral.children[2].children[0].getAttribute("value");
+	}
+
+	
+	// so it is LABEL : PREDICATE ( ARG1 , ... , ARGN )
+	text.innerHTML = text.innerHTML + label + ":" + predicate + "(" + arg0;
+	// add other args
+	for (var j = 3; j< litteral.children.length; j++){
+	    if (litteral.children[j].children[0].hasAttribute("varname")){
+		text.innerHTML = text.innerHTML + ", " + litteral.children[j].children[0].getAttribute("varname").replace("@","");
+	    }
+	    else{
+		text.innerHTML = text.innerHTML + ", " + litteral.children[j].children[0].getAttribute("value");
+	    }
+	}
+	text.innerHTML = text.innerHTML + ")";
+    }
+    // a litteral has a label (opt), a predicate and args
+    // other types of litterals?
+    // labels, predicates and args are composed of one sym (<sym value="..."/> or <sym varname="..."/>)
+        
+    new_pred.appendChild(text);
+	  
+    addFrameButtons(svgRoot); 
+}
+
 // turn inTree into an svg element and make it daughter of outParent
 function transformTree (inTree,outParent) {
 		var daughters;
@@ -125,6 +201,9 @@ function transformTree (inTree,outParent) {
 						new_outParent.setAttribute("type","node");
 						if (child.parentNode.getAttribute("type") != "std"){ 
 								new_outParent.setAttribute("mark",child.parentNode.getAttribute("type"));
+						}
+				                if (!/XMGVAR_/.test(child.parentNode.getAttribute("name"))){ 
+								new_outParent.setAttribute("name",child.parentNode.getAttribute("name"));
 						}
 						outParent.appendChild(new_outParent);
 						outParent.insertBefore(new_outParent,outParent.children[0]); // root node element comes first			
@@ -160,6 +239,7 @@ function transformFS(inFS,outParent) {
 		
 		outParent.appendChild(new_fs);
 
+    
 		// feature-value pairs
 		for (var i = 0; i < inFS.children.length; i++){
 				var child = inFS.children.item(i);
@@ -257,7 +337,7 @@ function processTree (tree) {
 
 function processNode (node) {
 		var fs = node.children[0];
-		processFS(fs);
+                processFS(fs,node.getAttribute("name"));
 		var fsHeight = fs.getBBox().height;
 		var fsWidth = fs.getBBox().width;
 		var markWidth = 0;
@@ -287,14 +367,19 @@ function processNode (node) {
 				markWidth = markSVG.getBBox().width;
 		}
 
-		// append cat label pr phon label
+    
+		// append cat label or phon label
 		if (node.hasAttribute("phon")) {
 				addPhon(node.getAttribute("phon"),node);
 		}
-		else {
-				addCategory(node.getAttribute("cat"),node);
+                else {
+		    var category = node.getAttribute("cat");
+		    if(node.hasAttribute("name")){
+			category=category+"<tspan font-weight=\"bold\" fill=\"red\"> ("+node.getAttribute("name")+") </tspan>";
+		    }
+		    addCategory(category,node);
 		}
-
+    
 		//	collapse and expand node
 		if (node.getAttribute("type") == "node"){
 				var collapseExpandSVG = document.createElementNS("http://www.w3.org/2000/svg","svg");
@@ -385,7 +470,10 @@ function addPhon(phon,node) {
 		node.appendChild(catlabel);
 }
 
-function processFS(fs) {
+
+function processFS(fs, nodename=null) {
+    console.log("Process FS, nodename="+nodename);
+    
 		fs.setAttribute("x",0); // needed for node marks
 		var hasType = false;
 		var ypoint = 3;
@@ -435,15 +523,27 @@ function processFS(fs) {
 		}
 
 		//	process feature and value
-		for (var i = firstFeatureChild; i < fs.children.length; i++){
+    for (var i = firstFeatureChild; i < fs.children.length; i++){
+	
 				var feature = fs.children[i];
 				var featureName = feature.children[0];
-				value = feature.children[1];
-				var labelWidth = 0;
+				var value = feature.children[1];
+	                        var labelWidth = 0;
+
+	if (featureName.innerHTML == "CAT"){
+	    //console.log("HERE FOUND CAT");
+	    if (nodename != null){
+		//console.log("HERE ADDING NAME");
+		//console.log(value.children[0]);
+		value.children[0].innerHTML = value.children[0].innerHTML + "<tspan font-weight=\"bold\" fill=\"red\"> ("+ nodename+") </tspan>";
+		//value.innerHTML = "TEST";
+	    }
+	}
+		    
 
 				featureName.setAttribute("x", 5); //padding
 				value.setAttribute("x", maxlengthFeatures + 10); //padding 
-
+		    
 				// value is label
 				if (value.hasAttribute("label")) {
 						addLabel(value.getAttribute("label"),value);
@@ -460,8 +560,9 @@ function processFS(fs) {
 				// value is fs
 				if (value.children[0].getAttribute("type")=="fs") {
 						var getlabel = value.children[0].getAttribute("label");
-						var oldvalue = value;
-						processFS(value.children[0]);
+				                var oldvalue = value;
+				    console.log("REC FS, nodename="+nodename);
+				                processFS(value.children[0], nodename);
 						if (getlabel != null) {
 								addLabel(getlabel,oldvalue);
 								var label = value.lastElementChild;
@@ -679,7 +780,7 @@ function highlightLabel (evt) {
 				var label = labels.item(i);
 				if (label.parentNode.getAttribute("type")=="label") {
 						label.setAttribute("style", "stroke:black; fill:transparent;");;
-						console.log(evtlabelName);
+						//console.log(evtlabelName);
 				}
 		}
 
