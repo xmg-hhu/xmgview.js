@@ -117,20 +117,21 @@ function makeFrame(target,entry) {
 
 function makePred(target,entry){
 
-    function makeSVGBox(label,svgboxtarget){
+    function makeSVGBox(label,svgboxtarget,pos){
 	var textsvg = document.createElementNS("http://www.w3.org/2000/svg","svg");
 	textsvg.setAttribute("type","label");
 	svgboxtarget.appendChild(textsvg);
 	
 	var text = document.createElementNS("http://www.w3.org/2000/svg","text");
+	textsvg.appendChild(text);
 	text.setAttribute("font-size",25);
 	text.setAttribute("text-anchor","start");
-	text.setAttribute("x",svgboxtarget.getBBox().width+3);
+	text.setAttribute("x",pos+5);
 	text.setAttribute("y",y+"em");
 	text.innerHTML = label;
-	textsvg.appendChild(text);
 	
 	var box = document.createElementNS("http://www.w3.org/2000/svg","rect");
+	textsvg.appendChild(box);
 	box.setAttribute("x", text.getBBox().x - 1.2);
 	box.setAttribute("y", text.getBBox().y - 1.2);
 	box.setAttribute("width", text.getBBox().width + 2.4);
@@ -139,19 +140,22 @@ function makePred(target,entry){
 	box.setAttribute("cursor","pointer");
 	box.setAttribute("onclick","highlightLabel(evt)");
 	box.setAttribute("style", "stroke:black; fill:transparent;");
-	textsvg.appendChild(box);
+
+	return pos+text.getBBox().width;
+	
     }
 
-    function makeSVGText(label,svgtexttarget){
+    function makeSVGText(label,svgtexttarget,pos){
 	var textsvg = document.createElementNS("http://www.w3.org/2000/svg","svg");
 	svgtexttarget.appendChild(textsvg);
 	var text = document.createElementNS("http://www.w3.org/2000/svg","text");
 	textsvg.appendChild(text);
 	text.setAttribute("font-size",25);
 	text.setAttribute("text-anchor","start");
-	text.setAttribute("x",svgtexttarget.getBBox().width+5);
+	text.setAttribute("x",pos+5);
 	text.setAttribute("y",y+"em");
 	text.innerHTML=label;
+	return pos+text.getBBox().width;
     }
 
     
@@ -173,7 +177,7 @@ function makePred(target,entry){
 	var y=1.5*(i+1);
 
 	if(nodename=="semdominance"){
-
+	    var pos=0;
 	    var domsvg = document.createElementNS("http://www.w3.org/2000/svg","svg");
 	    new_pred.appendChild(domsvg);
 	    var semdom = pred.children[i];
@@ -192,16 +196,17 @@ function makePred(target,entry){
 	    }
 
 
-	    makeSVGBox(left,domsvg);
-
-	    makeSVGText(">>",domsvg);
-
-	    makeSVGBox(right,domsvg);
+	    pos=makeSVGBox(left,domsvg,pos);
+	    console.log(pos);
+	    pos=makeSVGText(">>",domsvg,pos);
+	    console.log(pos);
+	    pos=makeSVGBox(right,domsvg,pos);
+	    console.log(pos);
 
 	}
 	
 	if(nodename=="literal"){
-
+	    var pos = 0;
 	    var litsvg = document.createElementNS("http://www.w3.org/2000/svg","svg");
 	    new_pred.appendChild(litsvg);
 	    
@@ -237,19 +242,19 @@ function makePred(target,entry){
 	    
 	    // so it is LABEL : PREDICATE ( ARG1 , ... , ARGN )
 
-	    makeSVGBox(label,litsvg);
+	    pos=makeSVGBox(label,litsvg,pos);
 
-	    makeSVGText(":",litsvg);
+	    pos=makeSVGText(":",litsvg,pos);
 	    
-	    makeSVGBox(predicate,litsvg);
+	    pos=makeSVGBox(predicate,litsvg,pos);
 	    
-	    makeSVGText("(",litsvg);
+	    pos=makeSVGText("(",litsvg,pos);
 
 	    
 	    // add other args
 	    for (var j = 2; j< literal.children.length; j++){
 		if(j>2){
-		    makeSVGText(",",litsvg);
+		    pos=makeSVGText(",",litsvg,pos);
 		}
 	    	if (literal.children[j].children[0].hasAttribute("varname")){
 	    	    var arg= literal.children[j].children[0].getAttribute("varname").replace("@","");
@@ -258,11 +263,11 @@ function makePred(target,entry){
 	    	    var arg= literal.children[j].children[0].getAttribute("value");
 	    	}
 
-		makeSVGBox(arg,litsvg);
+		pos=makeSVGBox(arg,litsvg,pos);
 		
 	    }
 
-	    makeSVGText(")",litsvg);
+	    pos=makeSVGText(")",litsvg,pos);
 
 
 	}
@@ -313,7 +318,7 @@ function printRelation(rel,out,ypoint,num){
 	
 	return num;}
 
-    function makeSVGBox(label,svgboxtarget){
+    function makeSVGBox(label,svgboxtarget,pos){
 	var textsvg = document.createElementNS("http://www.w3.org/2000/svg","svg");
 	textsvg.setAttribute("type","label");
 	svgboxtarget.appendChild(textsvg);
@@ -321,7 +326,7 @@ function printRelation(rel,out,ypoint,num){
 	var text = document.createElementNS("http://www.w3.org/2000/svg","text");
 	text.setAttribute("font-size",15);
 	text.setAttribute("text-anchor","start");
-	text.setAttribute("x",svgboxtarget.getBBox().width+3);
+	text.setAttribute("x",pos);
 	text.setAttribute("y",ypoint);
 	text.innerHTML = label;
 	textsvg.appendChild(text);
@@ -336,18 +341,23 @@ function printRelation(rel,out,ypoint,num){
 	box.setAttribute("onclick","highlightLabel(evt)");
 	box.setAttribute("style", "stroke:black; fill:transparent;");
 	textsvg.appendChild(box);
+
+	return pos+text.getBBox().width+5;
+
     }
 
-    function makeSVGText(label,svgtexttarget){
+    function makeSVGText(label,svgtexttarget,pos){
 	var textsvg = document.createElementNS("http://www.w3.org/2000/svg","svg");
 	svgtexttarget.appendChild(textsvg);
 	var text = document.createElementNS("http://www.w3.org/2000/svg","text");
 	textsvg.appendChild(text);
 	text.setAttribute("font-size",15);
 	text.setAttribute("text-anchor","start");
-	text.setAttribute("x",svgtexttarget.getBBox().width);
+	text.setAttribute("x",pos);
 	text.setAttribute("y",ypoint);
 	text.innerHTML=label;
+
+	return pos+text.getBBox().width+5;
     }
 
     
@@ -358,17 +368,18 @@ function printRelation(rel,out,ypoint,num){
     new_rel.setAttribute("type","feature");
     new_rel.setAttribute("id","semrelSVG");
     out.appendChild(new_rel);
+    var pos=0;
 
     var name = rel.getAttribute("name");
 
-    makeSVGText(name,new_rel);
+    pos=makeSVGText(name,new_rel,pos);
     
-    makeSVGText("(",new_rel);
+    pos=makeSVGText("(",new_rel,pos);
     
     for (var i = 0; i < rel.children.length; i++){
 
 	if(i>0){
-	    makeSVGText(",",new_rel);
+	    pos=makeSVGText(",",new_rel,pos);
 	}
 	
 	var textsvg = document.createElementNS("http://www.w3.org/2000/svg","svg");
@@ -381,16 +392,16 @@ function printRelation(rel,out,ypoint,num){
     	// text.setAttribute("y",ypoint);
     	// text.innerHTML = "";
 	if (rel.children[i].hasAttribute("varname")) { 
-	    makeSVGBox(rel.children[i].getAttribute("varname").replace("@",""),new_rel);
+	    pos=makeSVGBox(rel.children[i].getAttribute("varname").replace("@",""),new_rel,pos);
 	    
     	}
     	else{
-	    makeSVGText(rel.children[i].getAttribute("value"),new_rel);
+	    pos=makeSVGText(rel.children[i].getAttribute("value"),new_rel,pos);
 
     	}
     }
 
-    makeSVGText(")",new_rel);
+    pos=makeSVGText(")",new_rel,pos);
     
     return num +1;
     
