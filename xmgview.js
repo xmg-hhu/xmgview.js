@@ -104,11 +104,57 @@ function makeFrame(target,entry) {
 						ypoint += fsHeight + 20;  // padding
 				}
 		}
+    num=0;
+    for (var i = 0; i < frame.children.length; i++) {
+	
+	num=printRelation(frame.children[i],new_frame,ypoint,num);  // TODO: remove second argument?			
+    }
 		
 		addFrameButtons(svgRoot); 
 }
 
+
+
 function makePred(target,entry){
+
+    function makeSVGBox(label,svgboxtarget){
+	var textsvg = document.createElementNS("http://www.w3.org/2000/svg","svg");
+	textsvg.setAttribute("type","label");
+	svgboxtarget.appendChild(textsvg);
+	
+	var text = document.createElementNS("http://www.w3.org/2000/svg","text");
+	text.setAttribute("font-size",25);
+	text.setAttribute("text-anchor","start");
+	text.setAttribute("x",svgboxtarget.getBBox().width+3);
+	text.setAttribute("y",y+"em");
+	text.innerHTML = label;
+	textsvg.appendChild(text);
+	
+	var box = document.createElementNS("http://www.w3.org/2000/svg","rect");
+	box.setAttribute("x", text.getBBox().x - 1.2);
+	box.setAttribute("y", text.getBBox().y - 1.2);
+	box.setAttribute("width", text.getBBox().width + 2.4);
+	box.setAttribute("height", text.getBBox().height +2.4);
+	box.setAttribute("name",label);
+	box.setAttribute("cursor","pointer");
+	box.setAttribute("onclick","highlightLabel(evt)");
+	box.setAttribute("style", "stroke:black; fill:transparent;");
+	textsvg.appendChild(box);
+    }
+
+    function makeSVGText(label,svgtexttarget){
+	var textsvg = document.createElementNS("http://www.w3.org/2000/svg","svg");
+	svgtexttarget.appendChild(textsvg);
+	var text = document.createElementNS("http://www.w3.org/2000/svg","text");
+	textsvg.appendChild(text);
+	text.setAttribute("font-size",25);
+	text.setAttribute("text-anchor","start");
+	text.setAttribute("x",svgtexttarget.getBBox().width+5);
+	text.setAttribute("y",y+"em");
+	text.innerHTML=label;
+    }
+
+    
     //console.log("Here make Pred");
     entryName = entry.getAttribute("name");
     svgRoot = target;
@@ -119,64 +165,109 @@ function makePred(target,entry){
     var pred = entry.getElementsByTagName("semantics")[0];
     var ypoint = 3;
 
-    var text = document.createElementNS("http://www.w3.org/2000/svg","text");
-    text.setAttribute("font-size",25);
-    text.setAttribute("text-anchor","start");
-    text.setAttribute("x",2);
-    text.setAttribute("y","1.2em");
-    text.innerHTML = "";
+
     
-    // semantics is a list of litterals
+    // semantics is a list of literals and semdominances
     for (var i = 0; i < pred.children.length; i++){
-	var litteral = pred.children[i];
-	// negation is here:
-	// litteral.getAttribute("negated")
-	// label is litteral.children[0]
-	// predicate is litteral.children[1]
-	// args are litteral.children[2...]
+	var nodename = pred.children[i].nodeName;
+	var y=1.5*(i+1);
 
-	if (litteral.children[1].children[0].hasAttribute("varname")) {
-	    var predicate = litteral.children[1].children[0].getAttribute("varname").replace("@","");
-	}
-	else{
-	    var predicate = litteral.children[1].children[0].getAttribute("value");
-	}
+	if(nodename=="semdominance"){
 
-	if (litteral.children[0].children[0].hasAttribute("varname")){
-	    var label = litteral.children[0].children[0].getAttribute("varname").replace("@","");
-	}
-	else{
-	    // for some reason values can be variables in labels
-	    var label = litteral.children[0].children[0].getAttribute("value").replace("@","");
-	}
-	 
-	if (litteral.children[2].children[0].hasAttribute("varname")){
-	    var arg0 = litteral.children[2].children[0].getAttribute("varname").replace("@","");
-	}
-	else{
-	    var arg0 = litteral.children[2].children[0].getAttribute("value");
-	}
-
-	
-	// so it is LABEL : PREDICATE ( ARG1 , ... , ARGN )
-	text.innerHTML = text.innerHTML + label + ":" + predicate + "(" + arg0;
-	// add other args
-	for (var j = 3; j< litteral.children.length; j++){
-	    if (litteral.children[j].children[0].hasAttribute("varname")){
-		text.innerHTML = text.innerHTML + ", " + litteral.children[j].children[0].getAttribute("varname").replace("@","");
+	    var domsvg = document.createElementNS("http://www.w3.org/2000/svg","svg");
+	    new_pred.appendChild(domsvg);
+	    var semdom = pred.children[i];
+	    if (semdom.children[0].hasAttribute("varname")) {		
+		var left = semdom.children[0].getAttribute("varname").replace("@","");
 	    }
 	    else{
-		text.innerHTML = text.innerHTML + ", " + litteral.children[j].children[0].getAttribute("value");
+		var left = semdom.children[0].getAttribute("value");
 	    }
+
+	    if (semdom.children[1].hasAttribute("varname")) {
+		var right = semdom.children[1].getAttribute("varname").replace("@","");
+	    }
+	    else{
+		var right = semdom.children[1].getAttribute("value");
+	    }
+
+
+	    makeSVGBox(left,domsvg);
+
+	    makeSVGText(">>",domsvg);
+
+	    makeSVGBox(right,domsvg);
+
 	}
-	text.innerHTML = text.innerHTML + ")";
+	
+	if(nodename=="literal"){
+
+	    var litsvg = document.createElementNS("http://www.w3.org/2000/svg","svg");
+	    new_pred.appendChild(litsvg);
+	    
+	    var literal = pred.children[i];
+	    // negation is here:
+	    // literal.getAttribute("negated")
+	    // label is literal.children[0]
+	    // predicate is literal.children[1]
+	    // args are literal.children[2...]
+	    
+	    if (literal.children[1].children[0].hasAttribute("varname")) {
+		var predicate = literal.children[1].children[0].getAttribute("varname").replace("@","");
+	    }
+	    else{
+		var predicate = literal.children[1].children[0].getAttribute("value");
+	    }
+	    
+	    if (literal.children[0].children[0].hasAttribute("varname")){
+		var label = literal.children[0].children[0].getAttribute("varname").replace("@","");
+	    }
+	    else{
+		// for some reason values can be variables in labels
+		var label = literal.children[0].children[0].getAttribute("value").replace("@","");
+	    }
+	    
+	    if (literal.children[2].children[0].hasAttribute("varname")){
+		var arg0 = literal.children[2].children[0].getAttribute("varname").replace("@","");
+	    }
+	    else{
+		var arg0 = literal.children[2].children[0].getAttribute("value");
+	    }
+	    
+	    
+	    // so it is LABEL : PREDICATE ( ARG1 , ... , ARGN )
+
+	    makeSVGBox(label,litsvg);
+
+	    makeSVGText(":",litsvg);
+	    
+	    makeSVGBox(predicate,litsvg);
+	    
+	    makeSVGText("(",litsvg);
+
+	    
+	    // add other args
+	    for (var j = 2; j< literal.children.length; j++){
+		if(j>2){
+		    makeSVGText(",",litsvg);
+		}
+	    	if (literal.children[j].children[0].hasAttribute("varname")){
+	    	    var arg= literal.children[j].children[0].getAttribute("varname").replace("@","");
+	    	}
+	    	else{
+	    	    var arg= literal.children[j].children[0].getAttribute("value");
+	    	}
+
+		makeSVGBox(arg,litsvg);
+		
+	    }
+
+	    makeSVGText(")",litsvg);
+
+
+	}
     }
-    // a litteral has a label (opt), a predicate and args
-    // other types of litterals?
-    // labels, predicates and args are composed of one sym (<sym value="..."/> or <sym varname="..."/>)
-        
-    new_pred.appendChild(text);
-	  
+
     addFrameButtons(svgRoot); 
 }
 
@@ -213,8 +304,103 @@ function transformTree (inTree,outParent) {
 		}
 }
 
+// ypoint is the coordinate where the relation should be print
+// if more than one relation, ypoint should be updated (+1em?)
+// num is the number of the relation
+function printRelation(rel,out,ypoint,num){
+    
+    if(rel.nodeName!="relation"){
+	
+	return num;}
+
+    function makeSVGBox(label,svgboxtarget){
+	var textsvg = document.createElementNS("http://www.w3.org/2000/svg","svg");
+	textsvg.setAttribute("type","label");
+	svgboxtarget.appendChild(textsvg);
+	
+	var text = document.createElementNS("http://www.w3.org/2000/svg","text");
+	text.setAttribute("font-size",15);
+	text.setAttribute("text-anchor","start");
+	text.setAttribute("x",svgboxtarget.getBBox().width+3);
+	text.setAttribute("y",ypoint);
+	text.innerHTML = label;
+	textsvg.appendChild(text);
+	
+	var box = document.createElementNS("http://www.w3.org/2000/svg","rect");
+	box.setAttribute("x", text.getBBox().x - 1.2);
+	box.setAttribute("y", text.getBBox().y - 1.2);
+	box.setAttribute("width", text.getBBox().width + 2.4);
+	box.setAttribute("height", text.getBBox().height +2.4);
+	box.setAttribute("name",label);
+	box.setAttribute("cursor","pointer");
+	box.setAttribute("onclick","highlightLabel(evt)");
+	box.setAttribute("style", "stroke:black; fill:transparent;");
+	textsvg.appendChild(box);
+    }
+
+    function makeSVGText(label,svgtexttarget){
+	var textsvg = document.createElementNS("http://www.w3.org/2000/svg","svg");
+	svgtexttarget.appendChild(textsvg);
+	var text = document.createElementNS("http://www.w3.org/2000/svg","text");
+	textsvg.appendChild(text);
+	text.setAttribute("font-size",15);
+	text.setAttribute("text-anchor","start");
+	text.setAttribute("x",svgtexttarget.getBBox().width);
+	text.setAttribute("y",ypoint);
+	text.innerHTML=label;
+    }
+
+    
+    
+    ypoint=ypoint+10+num*40;
+    var new_rel = document.createElementNS("http://www.w3.org/2000/svg","svg");
+    new_rel.setAttribute("type","pred");
+    new_rel.setAttribute("type","feature");
+    new_rel.setAttribute("id","semrelSVG");
+    out.appendChild(new_rel);
+
+    var name = rel.getAttribute("name");
+
+    makeSVGText(name,new_rel);
+    
+    makeSVGText("(",new_rel);
+    
+    for (var i = 0; i < rel.children.length; i++){
+
+	if(i>0){
+	    makeSVGText(",",new_rel);
+	}
+	
+	var textsvg = document.createElementNS("http://www.w3.org/2000/svg","svg");
+	// If this is done after, the coordinates of the textsvg or the text objects are not set
+	new_rel.appendChild(textsvg);
+    	// var text = document.createElementNS("http://www.w3.org/2000/svg","text");
+    	// text.setAttribute("font-size",15);
+    	// text.setAttribute("text-anchor","start");
+    	// text.setAttribute("x",new_rel.getBBox().width);
+    	// text.setAttribute("y",ypoint);
+    	// text.innerHTML = "";
+	if (rel.children[i].hasAttribute("varname")) { 
+	    makeSVGBox(rel.children[i].getAttribute("varname").replace("@",""),new_rel);
+	    
+    	}
+    	else{
+	    makeSVGText(rel.children[i].getAttribute("value"),new_rel);
+
+    	}
+    }
+
+    makeSVGText(")",new_rel);
+    
+    return num +1;
+    
+}
+
 // turn inFS into an svg element and make it a daughter of outParent
 function transformFS(inFS,outParent) {
+    if(inFS.nodeName=="relation"){
+	return;
+    }
 		var new_fs = document.createElementNS("http://www.w3.org/2000/svg","svg");
 		new_fs.setAttribute("type","fs");
 		if (inFS.hasAttribute("coref")) {
@@ -472,7 +658,7 @@ function addPhon(phon,node) {
 
 
 function processFS(fs, nodename=null) {
-    console.log("Process FS, nodename="+nodename);
+    //console.log("Process FS, nodename="+nodename);
     
 		fs.setAttribute("x",0); // needed for node marks
 		var hasType = false;
@@ -561,7 +747,7 @@ function processFS(fs, nodename=null) {
 				if (value.children[0].getAttribute("type")=="fs") {
 						var getlabel = value.children[0].getAttribute("label");
 				                var oldvalue = value;
-				    console.log("REC FS, nodename="+nodename);
+				    //console.log("REC FS, nodename="+nodename);
 				                processFS(value.children[0], nodename);
 						if (getlabel != null) {
 								addLabel(getlabel,oldvalue);
