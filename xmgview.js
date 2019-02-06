@@ -71,7 +71,8 @@ function makeFrame(target,entry) {
 		if (entry.getElementsByTagName("frame")[0] == null) {
 		    console.log("No frame to display, but maybe pred");
 		    // this should be done in script.js, but I somehow cannot make changes in it
-		    makePred(target,entry);
+		    if(entry.getElementsByTagName("semantics")[0] != null)
+			makePred(target,entry);
 		    return;
 		}	
 		if (entry.getElementsByTagName("frame")[0].children.length==0) {
@@ -141,7 +142,7 @@ function makePred(target,entry){
 	box.setAttribute("onclick","highlightLabel(evt)");
 	box.setAttribute("style", "stroke:black; fill:transparent;");
 
-	return pos+text.getBBox().width;
+	return pos+text.getBBox().width+2;
 	
     }
 
@@ -155,7 +156,7 @@ function makePred(target,entry){
 	text.setAttribute("x",pos+5);
 	text.setAttribute("y",y+"em");
 	text.innerHTML=label;
-	return pos+text.getBBox().width;
+	return pos+text.getBBox().width+2;
     }
 
     
@@ -276,6 +277,84 @@ function makePred(target,entry){
     addFrameButtons(svgRoot); 
 }
 
+function makeTrace(target,entry){
+    svgRoot = target;
+    // add new svg element that contains the interface 
+    var new_trace = document.createElementNS("http://www.w3.org/2000/svg","svg");
+    new_trace.setAttribute("type","trace");
+    new_trace.setAttribute("id","TraceSVG");
+    // if there is no trace element, stop here
+    if (entry.getElementsByTagName("trace")[0] == null) {
+		    console.log("No trace to display");
+		    return;
+		}	
+    svgRoot.appendChild(new_trace);
+    var trace = entry.getElementsByTagName("trace")[0];
+    for (var i = 0; i < trace.children.length; i++){
+	var y=1.5*(i+1);
+	var classname = trace.children[i].childNodes[0].nodeValue;
+
+	var textsvg = document.createElementNS("http://www.w3.org/2000/svg","svg");
+	new_trace.appendChild(textsvg);
+	var text = document.createElementNS("http://www.w3.org/2000/svg","text");
+	textsvg.appendChild(text);
+	text.setAttribute("font-size",15);
+	text.setAttribute("text-anchor","start");
+	text.setAttribute("y",y+"em");
+	text.innerHTML=classname;
+	
+    }
+    console.log(svgRoot);
+    
+}
+
+function makeInterface(target,entry) {
+    entryName = entry.getAttribute("name");
+    svgRoot = target;
+    // add new svg element that contains the interface 
+    var new_interface = document.createElementNS("http://www.w3.org/2000/svg","svg");
+    new_interface.setAttribute("type","interface");
+    new_interface.setAttribute("id","InterfaceSVG");
+    // if there is no interface element, stop here
+                if (entry.getElementsByTagName("interface")[0] == null) {
+		    console.log("No interface to display");
+		    return;
+		}	
+		svgRoot.appendChild(new_interface);
+		var interface = entry.getElementsByTagName("interface")[0];
+		var ypoint = 3;
+		
+		// interface descriptions may consist of separate components
+                for (var i = 0; i < interface.children.length; i++) {
+				transformFS(interface.children[i],new_interface);  // TODO: remove second argument?			
+		}
+		for (var i = 0; i < new_interface.children.length; i++) {
+				if (new_interface.children[i].getAttribute("type") == "fs") {
+						var fs = new_interface.children[i];
+						processFS(fs);
+						fs.setAttribute("y",ypoint);  // paddin
+						var fsHeight = fs.getBBox().height;
+						// plot label of overall interface 
+						if (fs.hasAttribute("label")) {
+								addLabel(fs.getAttribute("label"),new_interface);
+								var label = new_interface.lastElementChild;
+								var labelSize = label.getBBox();
+								fs.setAttribute("x",labelSize.width + 5);  // padding
+								new_interface.lastElementChild.setAttribute("y",fsHeight > labelSize.height ? fsHeight/2 - labelSize.height/2 + ypoint : ypoint);
+						}
+						ypoint += fsHeight + 20;  // padding
+				}
+		}
+    num=0;
+    for (var i = 0; i < interface.children.length; i++) {
+	
+	num=printRelation(interface.children[i],new_interface,ypoint,num);  // TODO: remove second argument?			
+    }
+		
+		//addInterfaceButtons(svgRoot); 
+}
+
+
 // turn inTree into an svg element and make it daughter of outParent
 function transformTree (inTree,outParent) {
 		var daughters;
@@ -298,7 +377,7 @@ function transformTree (inTree,outParent) {
 						if (child.parentNode.getAttribute("type") != "std"){ 
 								new_outParent.setAttribute("mark",child.parentNode.getAttribute("type"));
 						}
-				                if (!/XMGVAR_/.test(child.parentNode.getAttribute("name"))){ 
+				                if (!/XMGVAR_/.test(child.parentNode.getAttribute("name")) && child.parentNode.getAttribute("name")!=null){ 
 								new_outParent.setAttribute("name",child.parentNode.getAttribute("name"));
 						}
 						outParent.appendChild(new_outParent);
