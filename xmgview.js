@@ -690,7 +690,7 @@ function processNode (node) {
 						collapseExpandSVG.setAttribute("x",parseInt(fs.getAttribute("x")) + fsWidth + 10); //padding
 				}
 				collapseExpandSVG.setAttribute("y",fsHeight/2 );
-				node.appendChild(collapseExpandSVG);
+		                node.appendChild(collapseExpandSVG);
 				node.setAttribute("x",0);
 		}	
 }
@@ -1138,7 +1138,7 @@ function addTreeButtons (target) {
 
 		var buttonCollapseAll = generateButton("collapse","pressedButtonCollapseAll(evt)",target);
 		buttonCollapseAll.setAttribute("x", xpos);
-		xpos += buttonCollapseAll.getBBox().width+5; // padding
+                xpos += buttonCollapseAll.getBBox().width+5; // padding
 
 		var buttonExpandAll = generateButton("expand","pressedButtonExpandAll(evt)",target);
 		buttonExpandAll.setAttribute("x", xpos);
@@ -1260,6 +1260,10 @@ function pressedButtonCollapseAll (evt) {
 						all[i].setAttribute("ce-status","collapsed");	
 				}
 		}
+                var svgTree=evt.target.parentNode.parentNode;
+    		svgTree.setAttribute("height",svgTree.getBBox().height+10);
+		svgTree.setAttribute("width",svgTree.getBBox().width+10);
+
 
 		// adapt latex export if necessary
 		if (object.parentNode.getElementById("latexExport")) {
@@ -1294,6 +1298,10 @@ function pressedButtonExpandAll (evt) {
 				}
 		}
 
+                var svgTree=evt.target.parentNode.parentNode;
+    		svgTree.setAttribute("height",svgTree.getBBox().height+10);
+		svgTree.setAttribute("width",svgTree.getBBox().width+10);
+    
 		// adapt latex export if necessary
 		if (object.parentNode.getElementById("latexExport")) {
 				// remove element latexExport
