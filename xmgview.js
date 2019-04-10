@@ -52,7 +52,7 @@ function makeTree(target,entry) {
 						syntree.setAttribute("id","synTreeSVG");
 				}
 		}	
-		
+
 		processTree(svgRoot);
 		addTreeButtons(svgRoot);
 }
@@ -198,11 +198,8 @@ function makePred(target,entry){
 
 
 	    pos=makeSVGBox(left,domsvg,pos);
-	    console.log(pos);
 	    pos=makeSVGText(">>",domsvg,pos);
-	    console.log(pos);
 	    pos=makeSVGBox(right,domsvg,pos);
-	    console.log(pos);
 
 	}
 	
@@ -304,7 +301,6 @@ function makeTrace(target,entry){
 	text.innerHTML=classname;
 	
     }
-    console.log(svgRoot);
     
 }
 
@@ -631,11 +627,17 @@ function processNode (node) {
 				}
 				if (node.getAttribute("mark")=="foot") {
 						mark.setAttribute("d","M 10 10 L 0 10 M 10 10 L 10 0 M 10 10 L 2 2 M 10 10 L 18 18 M 10 10 L 20 10 M 10 10 L 10 20 M 10 10 L 2 18 M 10 10 L 18 2");
-				}			
+				}
+		                if (node.getAttribute("mark")=="star") {
+						mark.setAttribute("d","M 10 10 L 0 10 M 10 10 L 10 0 M 10 10 L 2 2 M 10 10 L 18 18 M 10 10 L 20 10 M 10 10 L 10 20 M 10 10 L 2 18 M 10 10 L 18 2");
+				}
+		                // if (node.getAttribute("mark")=="ddaughter") {
+				// 		mark.setAttribute("d","M 20 20 C 0 10 0 40 20 30 L 20 0");
+				// }
 				mark.setAttribute("style", "stroke:green; fill:none;");
 				mark.setAttribute("transform", "scale (.7)");
 				markSVG.appendChild(mark);
-				markSVG.setAttribute("x",parseInt(fs.getAttribute("x")) + fsWidth + 10);
+		                markSVG.setAttribute("x",parseInt(fs.getAttribute("x")) + fsWidth + 10);
 				markSVG.setAttribute("type","mark"); 
 				node.appendChild(markSVG);
 
@@ -791,8 +793,7 @@ function processFS(fs, nodename=null) {
 				featureName.setAttribute("font-size","13");
 				featureName.setAttribute("y","1em");
 				featureName.setAttribute("font-variant","normal");
-				featureName.innerHTML = featureName.innerHTML.toUpperCase();
-				
+		                featureName.innerHTML = featureName.innerHTML.toUpperCase();
 				if (featureName.getBBox().width > maxlengthFeatures) {
 						maxlengthFeatures = featureName.getBBox().width;
 				}	
@@ -924,36 +925,58 @@ function drawTree (tree) {
 				}
 		}
 
-		// center root node
-		if (daughters) {
-				if (daughters.getBBox().width > rootWidth) { //padding
+    // center root node
+    if (daughters) {
+	if (daughters.getBBox().width > rootWidth) { //padding
 
-						root.setAttribute ("x",
-															 (parseInt(daughters.lastElementChild.getAttribute("x")) +
-																parseInt(daughters.lastElementChild.firstElementChild.getAttribute("x")) +
-																daughters.lastElementChild.firstElementChild.getBBox().width)/2 -
-															 rootWidth/2);
-						// console.log(daughters.lastElementChild.firstElementChild.getBBox().width);
-						// console.log(daughters.lastElementChild.getAttribute("x"));
-				}
-				else{
-						root.setAttribute ("x", 0);
-						daughters.setAttribute ("x", rootWidth/2 - daughters.getBBox().width/2);
-				}
-		}
+	    console.log("lastElement: ");
+	    console.log(daughters.lastElementChild);
+	    console.log("firstElementChild: ");
+	    console.log(daughters.lastElementChild.firstElementChild);
+	    newPosition= (
+		// the center of the right-most daughter
+		(parseInt(daughters.lastElementChild.getAttribute("x")) +
+		 parseInt(daughters.lastElementChild.firstElementChild.getAttribute("x")) +
+		 // the center of the left-most daughter
+		 (parseInt(daughters.firstElementChild.getAttribute("x")) +
+		  parseInt(daughters.firstElementChild.firstElementChild.getAttribute("x"))
+		 )))/2 +
+		daughters.lastElementChild.firstElementChild.getBBox().width/2 -rootWidth/2;
+
+	    root.setAttribute ("x", newPosition);
+	}
+	else{
+	    root.setAttribute ("x", 0);
+	    daughters.setAttribute ("x", rootWidth/2 - daughters.getBBox().width/2);
+	}
+    }
 
 		// draw edges
 		if (daughters) {
 				for (var i = 0; i < daughters.children.length; i++){
-						var child = daughters.children.item(i);
-						var edge = document.createElementNS("http://www.w3.org/2000/svg","line");
-						edge.setAttribute("x1", parseInt(root.getAttribute("x")) + root.getBBox().width/2);
-						edge.setAttribute("x2", parseInt(daughters.getAttribute("x")) + parseInt(child.getAttribute("x")) + parseInt(child.firstElementChild.getAttribute("x")) + child.firstElementChild.getBBox().width/2);
-						edge.setAttribute("y1", rootHeight + 3);
-						edge.setAttribute("y2", rootHeight + offsetyNode + 2);
-						edge.setAttribute("style", "stroke:black; fill:none;");
-						edge.setAttribute("type","edge");
-						tree.appendChild(edge);
+				    var child = daughters.children.item(i);
+				    if(child.children[0].getAttribute("mark")=="ddaughter"){
+					var edge = document.createElementNS("http://www.w3.org/2000/svg","line");
+					edge.setAttribute("x1", parseInt(root.getAttribute("x")) + root.getBBox().width/2);
+					edge.setAttribute("x2", parseInt(daughters.getAttribute("x")) + parseInt(child.getAttribute("x")) + parseInt(child.firstElementChild.getAttribute("x")) + child.firstElementChild.getBBox().width/2);
+					edge.setAttribute("y1", rootHeight + 3);
+					edge.setAttribute("y2", rootHeight + offsetyNode + 2);
+					edge.setAttribute("style", "stroke:black; fill:none;");
+					edge.setAttribute("type","edge");
+					edge.setAttribute("stroke-dasharray",5.5);
+					tree.appendChild(edge);
+				    }
+				    else{
+					var edge = document.createElementNS("http://www.w3.org/2000/svg","line");
+					
+					edge.setAttribute("x1", parseInt(root.getAttribute("x")) + root.getBBox().width/2);
+					edge.setAttribute("x2", parseInt(daughters.getAttribute("x")) + parseInt(child.getAttribute("x")) + parseInt(child.firstElementChild.getAttribute("x")) + child.firstElementChild.getBBox().width/2);
+					edge.setAttribute("y1", rootHeight + 3);
+					edge.setAttribute("y2", rootHeight + offsetyNode + 2);
+					edge.setAttribute("style", "stroke:black; fill:none;");
+					edge.setAttribute("type","edge");
+					tree.appendChild(edge);
+				    }
 				}
 		}
 }
@@ -1448,10 +1471,13 @@ function texifyNode (node) {
 				}
 		}
 		if (node.hasAttribute("mark")) {
-				var mark = node.getAttribute("mark");
+		    var mark = node.getAttribute("mark");
+		    console.log(mark);
 				if (mark == "subst") {texString += "$\\downarrow$";}
 				if (mark == "anchor") {texString += "$\\diamond$";}
 				if (mark == "foot") {texString += "*";}
+				if (mark == "star") {texString += "*";}
+				//if (mark == "ddaughter") {texString += "$_d$";}
 		}
 		texString += "}";
 		return(texString);
