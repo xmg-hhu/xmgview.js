@@ -589,6 +589,8 @@ function reorderFS(node) {
 }
 
 function processTree (tree) {
+    console.log("Processing tree ");
+    console.log(tree);
 		for (var i = 0; i < tree.children.length; i++){
 				var child = tree.children.item(i);
 				if (child.getAttribute("type")=="tree") {
@@ -605,9 +607,12 @@ function processTree (tree) {
 						processNode(child);
 				}
 		}
+        console.log("Done processing tree ");
 }
 
 function processNode (node) {
+    console.log("Processing node");
+    console.log(node);
 		var fs = node.children[0];
                 processFS(fs,node.getAttribute("name"));
 		var fsHeight = fs.getBBox().height;
@@ -694,119 +699,120 @@ function processNode (node) {
 				collapseExpandSVG.setAttribute("y",fsHeight/2 );
 		                node.appendChild(collapseExpandSVG);
 				node.setAttribute("x",0);
-		}	
+		}
+    console.log("Finished processing node");
 }
 
 function addLabel(labeltext,target) {
-		var label = document.createElementNS("http://www.w3.org/2000/svg","svg");
-		label.setAttribute("type","label");
-		target.appendChild(label);
-
-		var text = document.createElementNS("http://www.w3.org/2000/svg","text");
-		text.setAttribute("font-size",11);
-		text.setAttribute("text-anchor","start");
-		text.setAttribute("x",2);
-		text.setAttribute("y","1.2em");
-		text.innerHTML = labeltext;
-		label.appendChild(text);
-
-		var box = document.createElementNS("http://www.w3.org/2000/svg","rect");
-		box.setAttribute("x", 1);
-		box.setAttribute("y", text.getBBox().y-1.2);
-		box.setAttribute("width", text.getBBox().width+2);
-		box.setAttribute("height", text.getBBox().height+1.2);
-		box.setAttribute("name",labeltext);
-		box.setAttribute("cursor","pointer");
-		box.setAttribute("onclick","highlightLabel(evt)");
-		box.setAttribute("style", "stroke:black; fill:transparent;");
-		label.appendChild(box);
+    var label = document.createElementNS("http://www.w3.org/2000/svg","svg");
+    label.setAttribute("type","label");
+    target.appendChild(label);
+    
+    var text = document.createElementNS("http://www.w3.org/2000/svg","text");
+    text.setAttribute("font-size",11);
+    text.setAttribute("text-anchor","start");
+    text.setAttribute("x",2);
+    text.setAttribute("y","1.2em");
+    text.innerHTML = labeltext;
+    label.appendChild(text);
+    
+    var box = document.createElementNS("http://www.w3.org/2000/svg","rect");
+    box.setAttribute("x", 1);
+    box.setAttribute("y", text.getBBox().y-1.2);
+    box.setAttribute("width", text.getBBox().width+2);
+    box.setAttribute("height", text.getBBox().height+1.2);
+    box.setAttribute("name",labeltext);
+    box.setAttribute("cursor","pointer");
+    box.setAttribute("onclick","highlightLabel(evt)");
+    box.setAttribute("style", "stroke:black; fill:transparent;");
+    label.appendChild(box);
 }
 
 function addCategory(cat,node) {
-		var catlabel = document.createElementNS("http://www.w3.org/2000/svg","text");
-		catlabel.setAttribute("x",0);
-		catlabel.setAttribute("y",25);
-		catlabel.setAttribute("font-size",25);
-		catlabel.setAttribute("text-anchor","start");
-		catlabel.setAttribute("style","text-transform: uppercase;");
-		catlabel.setAttribute("display","none");
-		catlabel.setAttribute("type","catlabel");
-		catlabel.innerHTML = cat;
-		node.appendChild(catlabel);
+    var catlabel = document.createElementNS("http://www.w3.org/2000/svg","text");
+    catlabel.setAttribute("x",0);
+    catlabel.setAttribute("y",25);
+    catlabel.setAttribute("font-size",25);
+    catlabel.setAttribute("text-anchor","start");
+    catlabel.setAttribute("style","text-transform: uppercase;");
+    catlabel.setAttribute("display","none");
+    catlabel.setAttribute("type","catlabel");
+    catlabel.innerHTML = cat;
+    node.appendChild(catlabel);
 }
 
 function addPhon(phon,node) {
-		var catlabel = document.createElementNS("http://www.w3.org/2000/svg","text");
-		catlabel.setAttribute("x",0);
-		catlabel.setAttribute("y",25);
-		catlabel.setAttribute("font-size",25);
-		catlabel.setAttribute("style", "font-style: italic;");
-		catlabel.setAttribute("text-anchor","start");
-		catlabel.setAttribute("display","none");
-		catlabel.setAttribute("type","catlabel");
-		catlabel.innerHTML = phon;
-		node.appendChild(catlabel);
+    var catlabel = document.createElementNS("http://www.w3.org/2000/svg","text");
+    catlabel.setAttribute("x",0);
+    catlabel.setAttribute("y",25);
+    catlabel.setAttribute("font-size",25);
+    catlabel.setAttribute("style", "font-style: italic;");
+    catlabel.setAttribute("text-anchor","start");
+    catlabel.setAttribute("display","none");
+    catlabel.setAttribute("type","catlabel");
+    catlabel.innerHTML = phon;
+    node.appendChild(catlabel);
 }
 
 
 function processFS(fs, nodename=null) {
-    //console.log("Process FS, nodename="+nodename);
+    console.log("Processing FS");
+    console.log(fs);
+    fs.setAttribute("x",0); // needed for node marks
+    var hasType = false;
+    var ypoint = 3;
     
-		fs.setAttribute("x",0); // needed for node marks
-		var hasType = false;
-		var ypoint = 3;
-
-		// process type of feature structure
-		if (fs.hasAttribute("fstype")) {
-				var hasType = true;
-				var type = document.createElementNS("http://www.w3.org/2000/svg","svg");
-				type.setAttribute("type","type");
-				fs.insertBefore(type,fs.firstChild);
-				
-				var text = document.createElementNS("http://www.w3.org/2000/svg","text");
-				text.innerHTML = fs.getAttribute("fstype");
-				text.setAttribute("y", "0.9em");
-				text.setAttribute("font-size",15);
-				text.setAttribute("style", "font-style: italic;");
-				type.appendChild(text);
-
-				// position type of feature structure
-				type.setAttribute("x", 5);  //padding
-				type.setAttribute("y", ypoint);			
-				ypoint += type.getBBox().height + 5; //padding 
-		}
-
-		if (fs.children.length < 1) {
-				return;
-		}
+    // process type of feature structure
+    if (fs.hasAttribute("fstype")) {
+	var hasType = true;
+	var type = document.createElementNS("http://www.w3.org/2000/svg","svg");
+	type.setAttribute("type","type");
+	fs.insertBefore(type,fs.firstChild);
 	
-		// assumption: if there is a type, it is the first child of the feature structure
-		var firstFeatureChild = 0;
-		if (hasType) { firstFeatureChild = 1;}
-
-		// compute maxlength of feature names
-		var maxlengthFeatures = 0;
-		for (var i = firstFeatureChild; i < fs.children.length; i++){
-				var feature = fs.children[i];
-				var featureName = feature.children[0];
-
-				featureName.setAttribute("font-size","13");
-				featureName.setAttribute("y","1em");
-				featureName.setAttribute("font-variant","normal");
-		                featureName.innerHTML = featureName.innerHTML.toUpperCase();
-				if (featureName.getBBox().width > maxlengthFeatures) {
-						maxlengthFeatures = featureName.getBBox().width;
-				}	
-		}
-
-		//	process feature and value
+	var text = document.createElementNS("http://www.w3.org/2000/svg","text");
+	text.innerHTML = fs.getAttribute("fstype");
+	text.setAttribute("y", "0.9em");
+	text.setAttribute("font-size",15);
+	text.setAttribute("style", "font-style: italic;");
+	type.appendChild(text);
+	
+	// position type of feature structure
+	type.setAttribute("x", 5);  //padding
+	type.setAttribute("y", ypoint);			
+	ypoint += type.getBBox().height + 5; //padding 
+    }
+    
+    if (fs.children.length < 1) {
+	return;
+    }
+    
+    // assumption: if there is a type, it is the first child of the feature structure
+    var firstFeatureChild = 0;
+    if (hasType) { firstFeatureChild = 1;}
+    
+    // compute maxlength of feature names
+    var maxlengthFeatures = 0;
+    for (var i = firstFeatureChild; i < fs.children.length; i++){
+	var feature = fs.children[i];
+	var featureName = feature.children[0];
+	
+	featureName.setAttribute("font-size","13");
+	featureName.setAttribute("y","1em");
+	featureName.setAttribute("font-variant","normal");
+	featureName.innerHTML = featureName.innerHTML.toUpperCase();
+	if (featureName.getBBox().width > maxlengthFeatures) {
+	    maxlengthFeatures = featureName.getBBox().width;
+	}	
+    }
+    
+    //	process feature and value
     for (var i = firstFeatureChild; i < fs.children.length; i++){
 	
-				var feature = fs.children[i];
-				var featureName = feature.children[0];
-				var value = feature.children[1];
-	                        var labelWidth = 0;
-
+	var feature = fs.children[i];
+	var featureName = feature.children[0];
+	var value = feature.children[1];
+	var labelWidth = 0;
+	
 	if (featureName.innerHTML == "CAT"){
 	    //console.log("HERE FOUND CAT");
 	    if (nodename != null){
@@ -816,123 +822,125 @@ function processFS(fs, nodename=null) {
 		//value.innerHTML = "TEST";
 	    }
 	}
-		    
-
-				featureName.setAttribute("x", 5); //padding
-				value.setAttribute("x", maxlengthFeatures + 10); //padding 
-		    
-				// value is label
-				if (value.hasAttribute("label")) {
-						addLabel(value.getAttribute("label"),value);
-						labelWidth = value.lastElementChild.getBBox().width;
-				}
-
-				// value is text element
-				if (value.children[0].tagName =="text") {
-						value.children[0].setAttribute("y", "0.86em");
-						value.children[0].setAttribute("font-size", "15");
-						value.children[0].setAttribute("x", labelWidth);
-				}
-
-				// value is fs
-				if (value.children[0].getAttribute("type")=="fs") {
-						var getlabel = value.children[0].getAttribute("label");
-				                var oldvalue = value;
-				    //console.log("REC FS, nodename="+nodename);
-				                processFS(value.children[0], nodename);
-						if (getlabel != null) {
-								addLabel(getlabel,oldvalue);
-								var label = value.lastElementChild;
-								var labelSize = label.getBBox();
-								labelWidth = labelSize.width;
-								labelHeight = labelSize.height;
-
-								var oldlabel = oldvalue.lastElementChild;
-								var oldlabelSize = oldlabel.getBBox();
-								oldlabelWidth = oldlabelSize.width;
-								oldlabelHeight = oldlabelSize.height;
-
-								// place fs after label
-								oldvalue.children[0].setAttribute("x",oldlabelWidth + 5);
-								// center label vertically
-								//label.setAttribute("y", value.children[0].getBBox().height/2 > labelSize.height/2 ? value.children[0].getBBox().height/2 - labelSize.height/2 - 2 : -2); // padding 
-								// here should be centered
-								oldlabel.setAttribute("y", oldvalue.getBBox().height/2 - oldlabelHeight/2); // padding 
-						} 
-				}	
-				
-				// center feature name vertically
-				featureName.setAttribute("y", value.getBBox().height/2-featureName.getBBox().height/2 + 12); // padding
-				
-				// set and increment y attribute
-				feature.setAttribute("y", ypoint);
-				ypoint += feature.getBBox().height + 5; //padding 
-
-		}
-
-		// draw squared brackets around fs	
-		var left_x = 2;
-		var right_x = fs.getBBox().width+9;
-		var top_y = 2;
-		var bot_y = fs.getBBox().height+7;
-		var brackettip = 7; 	
-
-		var FSrb = document.createElementNS("http://www.w3.org/2000/svg","path");
-		FSrb.setAttribute("d","M "+left_x+" "+top_y+" H "+brackettip+" M "+left_x+" "+top_y+" L "+left_x+" "+bot_y+ " H "+brackettip );
-		FSrb.setAttribute("style", "stroke:black; fill:none;");
-		fs.appendChild(FSrb);
-
-		var FSlb = document.createElementNS("http://www.w3.org/2000/svg","path");
-		FSlb.setAttribute("d","M "+right_x+" "+top_y+" H "+(right_x-brackettip)+" M "+right_x+" "+top_y+" L "+right_x+" "+bot_y+" H "+(right_x-brackettip));//M "+ fs.getBBox().width +" 2 L "+ fs.getBBox().width +" " + fs.getBBox().height + "H 7" );
-		FSlb.setAttribute("style", "stroke:black; fill:none;");
-		fs.appendChild(FSlb);
+	
+	
+	featureName.setAttribute("x", 5); //padding
+	value.setAttribute("x", maxlengthFeatures + 10); //padding 
+	
+	// value is label
+	if (value.hasAttribute("label")) {
+	    addLabel(value.getAttribute("label"),value);
+	    labelWidth = value.lastElementChild.getBBox().width;
+	}
+	
+	// value is text element
+	if (value.children[0].tagName =="text") {
+	    value.children[0].setAttribute("y", "0.86em");
+	    value.children[0].setAttribute("font-size", "15");
+	    value.children[0].setAttribute("x", labelWidth);
+	}
+	
+	// value is fs
+	if (value.children[0].getAttribute("type")=="fs") {
+	    var getlabel = value.children[0].getAttribute("label");
+	    var oldvalue = value;
+	    //console.log("REC FS, nodename="+nodename);
+	    processFS(value.children[0], nodename);
+	    if (getlabel != null) {
+		addLabel(getlabel,oldvalue);
+		var label = value.lastElementChild;
+		var labelSize = label.getBBox();
+		labelWidth = labelSize.width;
+		labelHeight = labelSize.height;
+		
+		var oldlabel = oldvalue.lastElementChild;
+		var oldlabelSize = oldlabel.getBBox();
+		oldlabelWidth = oldlabelSize.width;
+		oldlabelHeight = oldlabelSize.height;
+		
+		// place fs after label
+		oldvalue.children[0].setAttribute("x",oldlabelWidth + 5);
+		// center label vertically
+		//label.setAttribute("y", value.children[0].getBBox().height/2 > labelSize.height/2 ? value.children[0].getBBox().height/2 - labelSize.height/2 - 2 : -2); // padding 
+		// here should be centered
+		oldlabel.setAttribute("y", oldvalue.getBBox().height/2 - oldlabelHeight/2); // padding 
+	    } 
+	}	
+	
+	// center feature name vertically
+	featureName.setAttribute("y", value.getBBox().height/2-featureName.getBBox().height/2 + 12); // padding
+	
+	// set and increment y attribute
+	feature.setAttribute("y", ypoint);
+	ypoint += feature.getBBox().height + 5; //padding 
+	
+    }
+    
+    // draw squared brackets around fs	
+    var left_x = 2;
+    var right_x = fs.getBBox().width+9;
+    var top_y = 2;
+    var bot_y = fs.getBBox().height+7;
+    var brackettip = 7; 	
+    
+    var FSrb = document.createElementNS("http://www.w3.org/2000/svg","path");
+    FSrb.setAttribute("d","M "+left_x+" "+top_y+" H "+brackettip+" M "+left_x+" "+top_y+" L "+left_x+" "+bot_y+ " H "+brackettip );
+    FSrb.setAttribute("style", "stroke:black; fill:none;");
+    fs.appendChild(FSrb);
+    
+    var FSlb = document.createElementNS("http://www.w3.org/2000/svg","path");
+    FSlb.setAttribute("d","M "+right_x+" "+top_y+" H "+(right_x-brackettip)+" M "+right_x+" "+top_y+" L "+right_x+" "+bot_y+" H "+(right_x-brackettip));//M "+ fs.getBBox().width +" 2 L "+ fs.getBBox().width +" " + fs.getBBox().height + "H 7" );
+    FSlb.setAttribute("style", "stroke:black; fill:none;");
+    fs.appendChild(FSlb);
+    console.log("Finished processing fs");
 }
 
 
-function drawTree (tree) {	
-		var root;
-		var rootHeight;
-		var rootWidth;
-		var daughters;
-		var daughtersXpoint = 0;
+function drawTree (tree) {
+    console.log("Drawing tree");
+    var root;
+    var rootHeight;
+    var rootWidth;
+    var daughters;
+    var daughtersXpoint = 0;
 
-		for (var i = 0; i < tree.children.length; i++) {
-				var child = tree.children[i];
-				if (child.getAttribute("type")=="node") {
-						root = child;
-						rootHeight = root.getBBox().height;
-						rootWidth = root.getBBox().width;
-				}
-				if (child.getAttribute("type")=="children") {
-						daughters = child;
-						daughters.setAttribute("x",0);
-				}		
-		}
-
-		if (tree.children.length > 2) {
-				// TODO: something is wrong; throw error
-		}
-
-		// position children element
-		if (daughters) {
-				daughters.setAttribute ("y", rootHeight + offsetyNode);
-
-				//	position children next to each other
-				for (var i = 0; i < daughters.children.length; i++){
-						var child = daughters.children.item(i);
-						child.setAttribute ("x", daughtersXpoint);
-						daughtersXpoint += child.getBBox().width + offsetxNode; 
-				}
-		}
-
+    // tree.children should contain
+    // [0]: a node, the root
+    // [1]: the daughters
+    for (var i = 0; i < tree.children.length; i++) {
+	var child = tree.children[i];
+	if (child.getAttribute("type")=="node") {
+	    root = child;
+	    rootHeight = root.getBBox().height;
+	    rootWidth = root.getBBox().width;
+	}
+	if (child.getAttribute("type")=="children") {
+	    daughters = child;
+	    daughters.setAttribute("x",0);
+	}	
+    }
+    
+    if (tree.children.length > 2) {
+	console.log("Unexpected: tree has more than 2 children")
+    }
+    
+    // position children element
+    if (daughters) {
+	daughters.setAttribute ("y", rootHeight + offsetyNode);
+	
+	//	position children next to each other
+	for (var i = 0; i < daughters.children.length; i++){
+	    var child = daughters.children.item(i);
+	    child.setAttribute ("x", daughtersXpoint);
+	    daughtersXpoint += child.getBBox().width + offsetxNode; 
+	}
+    }
+    console.log("Still drawing tree");
+    
     // center root node
     if (daughters) {
 	if (daughters.getBBox().width > rootWidth) { //padding
-
-	    console.log("lastElement: ");
-	    console.log(daughters.lastElementChild);
-	    console.log("firstElementChild: ");
-	    console.log(daughters.lastElementChild.firstElementChild);
+	    
 	    newPosition= (
 		// the center of the right-most daughter
 		(parseInt(daughters.lastElementChild.getAttribute("x")) +
@@ -942,7 +950,7 @@ function drawTree (tree) {
 		  parseInt(daughters.firstElementChild.firstElementChild.getAttribute("x"))
 		 )))/2 +
 		daughters.lastElementChild.firstElementChild.getBBox().width/2 -rootWidth/2;
-
+	    
 	    root.setAttribute ("x", newPosition);
 	}
 	else{
@@ -950,35 +958,37 @@ function drawTree (tree) {
 	    daughters.setAttribute ("x", rootWidth/2 - daughters.getBBox().width/2);
 	}
     }
-
-		// draw edges
-		if (daughters) {
-				for (var i = 0; i < daughters.children.length; i++){
-				    var child = daughters.children.item(i);
-				    if(child.children[0].getAttribute("mark")=="ddaughter"){
-					var edge = document.createElementNS("http://www.w3.org/2000/svg","line");
-					edge.setAttribute("x1", parseInt(root.getAttribute("x")) + root.getBBox().width/2);
-					edge.setAttribute("x2", parseInt(daughters.getAttribute("x")) + parseInt(child.getAttribute("x")) + parseInt(child.firstElementChild.getAttribute("x")) + child.firstElementChild.getBBox().width/2);
-					edge.setAttribute("y1", rootHeight + 3);
-					edge.setAttribute("y2", rootHeight + offsetyNode + 2);
-					edge.setAttribute("style", "stroke:black; fill:none;");
-					edge.setAttribute("type","edge");
-					edge.setAttribute("stroke-dasharray",5.5);
-					tree.appendChild(edge);
-				    }
-				    else{
-					var edge = document.createElementNS("http://www.w3.org/2000/svg","line");
-					
-					edge.setAttribute("x1", parseInt(root.getAttribute("x")) + root.getBBox().width/2);
-					edge.setAttribute("x2", parseInt(daughters.getAttribute("x")) + parseInt(child.getAttribute("x")) + parseInt(child.firstElementChild.getAttribute("x")) + child.firstElementChild.getBBox().width/2);
-					edge.setAttribute("y1", rootHeight + 3);
-					edge.setAttribute("y2", rootHeight + offsetyNode + 2);
-					edge.setAttribute("style", "stroke:black; fill:none;");
-					edge.setAttribute("type","edge");
-					tree.appendChild(edge);
-				    }
-				}
-		}
+    
+    console.log("Drawing edges");
+    // draw edges
+    if (daughters) {
+	for (var i = 0; i < daughters.children.length; i++){
+	    var child = daughters.children.item(i);
+	    if(child.children[0].getAttribute("mark")=="ddaughter"){
+		var edge = document.createElementNS("http://www.w3.org/2000/svg","line");
+		edge.setAttribute("x1", parseInt(root.getAttribute("x")) + root.getBBox().width/2);
+		edge.setAttribute("x2", parseInt(daughters.getAttribute("x")) + parseInt(child.getAttribute("x")) + parseInt(child.firstElementChild.getAttribute("x")) + child.firstElementChild.getBBox().width/2);
+		edge.setAttribute("y1", rootHeight + 3);
+		edge.setAttribute("y2", rootHeight + offsetyNode + 2);
+		edge.setAttribute("style", "stroke:black; fill:none;");
+		edge.setAttribute("type","edge");
+		edge.setAttribute("stroke-dasharray",5.5);
+		tree.appendChild(edge);
+	    }
+	    else{
+		var edge = document.createElementNS("http://www.w3.org/2000/svg","line");
+		
+		edge.setAttribute("x1", parseInt(root.getAttribute("x")) + root.getBBox().width/2);
+		edge.setAttribute("x2", parseInt(daughters.getAttribute("x")) + parseInt(child.getAttribute("x")) + parseInt(child.firstElementChild.getAttribute("x")) + child.firstElementChild.getBBox().width/2);
+		edge.setAttribute("y1", rootHeight + 3);
+		edge.setAttribute("y2", rootHeight + offsetyNode + 2);
+		edge.setAttribute("style", "stroke:black; fill:none;");
+		edge.setAttribute("type","edge");
+		tree.appendChild(edge);
+	    }
+	}
+    }
+    console.log("Finished drawing tree");
 }
 
 
@@ -1234,13 +1244,13 @@ function pressedButtonExportSVG (evt) {
 						object = siblings[i];
 				}
 		}
-
 		exportSVG(object)
 }
 
+
 function exportSVG (object) {
-		var clone = object.cloneNode(true);
-		
+    var clone = object.cloneNode(true);
+    console.log(clone);
 		// clean-up SVG: remove ce-switch and onclick-stuff
 		var svgElements = clone.getElementsByTagName("svg");
 		for (var i = 0; i<svgElements.length; i++) {
@@ -1259,7 +1269,7 @@ function exportSVG (object) {
 		}
 
 		var serializer = new XMLSerializer();
-    var blob = new Blob([serializer.serializeToString(clone)],{type:'text/svg'});
+    var blob = new Blob([serializer.serializeToString(clone)],{type:"image/svg+xml"});
 		saveAs(blob, entryName+".svg");
 }
 
@@ -1379,42 +1389,43 @@ function pressedButtonExportLatex (evt) {
 
 
 function exportLatex (object) {
-		var texStringIndent = "\t";
-
-		// delete latexExport element if it already exists
-		if (object.parentNode.getElementById("latexExport")) {
-				// remove element latexExport
-				var element = object.parentNode.getElementById("latexExport");
-				element.parentNode.removeChild(element);
-				return;
-		}
-
-		// create latexExport element
-		var foreignObject;
-		foreignObject = document.createElementNS("http://www.w3.org/2000/svg","foreignObject");
-		foreignObject.setAttribute("id","latexExport");
-		foreignObject.setAttribute("width","100%");
-		foreignObject.setAttribute("height","100%");
-		object.parentNode.appendChild(foreignObject);
-		
-		var bodyElement = document.createElementNS("http://www.w3.org/1999/xhtml","body");
-		foreignObject.appendChild(bodyElement);
-		
-		var textArea = document.createElementNS("http://www.w3.org/1999/xhtml","textarea");
-		bodyElement.appendChild(textArea);
-		textArea.setAttribute("disabled","false");
-		textArea.setAttribute("rows","25");
-		textArea.setAttribute("cols","50");
-
-		if (object.getAttribute("type") == "tree") {
-				textArea.innerHTML = "\\Forest{\n\t" + texifyTree(object,texStringIndent) + "\n}\n";
-		}
-		if (object.getAttribute("type") == "frame") {
-				textArea.innerHTML = texifyFrame(object,texStringIndent) + "\n";
-		}
-		
-		foreignObject.setAttribute("y", object.getAttribute("y"));
-		foreignObject.setAttribute("x",  object.getAttribute("x"));
+    var texStringIndent = "\t";
+    
+    // delete latexExport element if it already exists
+    if (object.parentNode.getElementById("latexExport")) {
+	// remove element latexExport
+	var element = object.parentNode.getElementById("latexExport");
+	element.parentNode.removeChild(element);
+	return;
+    }
+    
+    // create latexExport element
+    var foreignObject;
+    foreignObject = document.createElementNS("http://www.w3.org/2000/svg","foreignObject");
+    foreignObject.setAttribute("id","latexExport");
+    foreignObject.setAttribute("width","100%");
+    foreignObject.setAttribute("height","100%");
+    object.parentNode.appendChild(foreignObject);
+    
+    var bodyElement = document.createElementNS("http://www.w3.org/1999/xhtml","body");
+    foreignObject.appendChild(bodyElement);
+    
+    var textArea = document.createElementNS("http://www.w3.org/1999/xhtml","textarea");
+    bodyElement.appendChild(textArea);
+    textArea.setAttribute("disabled","false");
+    textArea.setAttribute("rows","25");
+    textArea.setAttribute("cols","50");
+    
+    if (object.getAttribute("type") == "tree") {
+	textArea.innerHTML = "\\Forest{\n\t" + texifyTree(object,texStringIndent) + "\n}\n";
+    }
+    if (object.getAttribute("type") == "frame") {
+	textArea.innerHTML = texifyFrame(object,texStringIndent) + "\n";
+    }
+    
+    foreignObject.setAttribute("y", object.getAttribute("y"));
+    if(object.hasAttribute("x"))
+	foreignObject.setAttribute("x",  object.getAttribute("x"));
 }
 
 
@@ -1439,17 +1450,38 @@ function texifyTree (tree,texStringIndent) {
 }
 
 function texifyFrame (frame,texStringIndent) {
-		var texString = "";
-		for (var i = 0; i < frame.children.length; i++) {
-				if (frame.children[i].getAttribute("type")=="fs") {
-						texString +=
-								"\\begin{avm}\n" +
-								(frame.children[i].hasAttribute("label") ? "\\@{"+frame.children[i].getAttribute("label")+"}" : "") +
-								texifyFS(frame.children[i],texStringIndent) +
-								"\n\\end{avm}\n\n";
-				}
+    var texString = "";
+    for (var i = 0; i < frame.children.length; i++) {
+	if (frame.children[i].getAttribute("type")=="fs") {
+	    texString +=
+		"\\begin{avm}\n" +
+		(frame.children[i].hasAttribute("label") ? "\\@{"+frame.children[i].getAttribute("label")+"}" : "") +
+		texifyFS(frame.children[i],texStringIndent) +
+		"\n\\end{avm}\n\n";
+	}
+	else{
+	    if (frame.children[i].getAttribute("id")=="semrelSVG") {
+		// the predicate
+		texString +=
+		    "\\begin{avm}\n";
+		texString += frame.children[i].children[0].getElementsByTagName("text")[0].innerHTML;
+		// the arguments
+		for(var j =1; j < frame.children[i].children.length; j++){
+		    if (frame.children[i].children[j].getAttribute("type") == "label") {
+			texString += "\\@{" +  frame.children[i].children[j].getElementsByTagName("text")[0].innerHTML +"} ";
+		    }
+		    else{
+			var current=frame.children[i].children[j].getElementsByTagName("text");
+			if(current.length>0)
+			    texString += current[0].innerHTML;
+		    }
 		}
-		return(texString);
+		texString +=
+		    "\n\\end{avm}\n\n";
+	    }
+	}
+    }
+    return(texString);
 }
 
 
@@ -1486,8 +1518,10 @@ function texifyNode (node) {
 
 function texifyFS (fs){
 		var texString = "\\[";
-		if (fs.hasAttribute("fstype")) {
-				texString += "\\asort{" + fs.getAttribute("fstype") + "}";
+    if (fs.hasAttribute("fstype")) {
+	console.log(fs.getAttribute("fstype"));
+	// /_/gi is a regex which we use for escaping underscores (maybe needed at some other places)
+	texString += "\\asort{" + fs.getAttribute("fstype").replace(/_/gi,"\\_") + "}";
 		}
 		for (var i = 0; i < fs.children.length; i++) {
 				var feature = fs.children[i];
