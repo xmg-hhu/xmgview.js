@@ -3,7 +3,8 @@
 // Timestamp: 2017-09-29 Fri
 
 // Draws beautiful, interactive SVG trees and feature structures based on XMG's boring XML output.
-// Written by Timm Lichte (lichte@phil.hhu.de).
+// Written by Timm Lichte (lichte@phil.hhu.de), 2017.
+// Some extensions and maintenance by Simon Petitjean (petitjean@phil.hhu.de), 2018--. 
 
 // TODO: revisit padding variables
 var offsetxLabel = 3;
@@ -31,30 +32,95 @@ function standaloneFrame() {
 
 // makeTree is used in the webgui
 function makeTree(target,entry) {
-		entryName = entry.getAttribute("name");
-		svgRoot = target;
-		var syntree;
+    entryName = entry.getAttribute("name");
+    svgRoot = target;
+    var syntree;
+    var tree=entry.getElementsByTagName("tree")[0];
+    
+    // if there is no tree element, create an empty one and stop here
+    if (tree == null) {
+	console.log("No tree description");
+	var empty_tree = document.createElementNS("http://www.w3.org/2000/svg","svg");
+	empty_tree.setAttribute("type","tree");
+	empty_tree.setAttribute("id","synTreeSVG");
+	svgRoot.appendChild(empty_tree);
+	//return;
+    }
 
-		// if there is no tree element, create an empty one and stop here
-		if (entry.getElementsByTagName("tree")[0] == null) {
-				var empty_tree = document.createElementNS("http://www.w3.org/2000/svg","svg");
-				empty_tree.setAttribute("type","tree");
-				empty_tree.setAttribute("id","synTreeSVG");
-				svgRoot.appendChild(empty_tree);
-				return;
+    // in case there is no tree, look for a morph description
+    if(tree==null){
+	if(entry.getElementsByTagName("morph")[0]!=null){
+	    
+	    var morph=entry.getElementsByTagName("morph")[0]
+	    var textsvg = document.createElementNS("http://www.w3.org/2000/svg","svg");
+	    empty_tree.appendChild(textsvg);
+	    var text = document.createElementNS("http://www.w3.org/2000/svg","text");
+	    textsvg.appendChild(text);
+	    text.setAttribute("font-size",25);
+	    text.setAttribute("text-anchor","start");
+	    text.setAttribute("y",40);
+	    text.setAttribute("x",0);
+
+	    //text.setAttribute("x",pos+5);
+	    //text.setAttribute("y",y+"em");
+
+	    function makeSVGText(label,svgtexttarget,pos){
+		var textsvg = document.createElementNS("http://www.w3.org/2000/svg","svg");
+		svgtexttarget.appendChild(textsvg);
+		var text = document.createElementNS("http://www.w3.org/2000/svg","text");
+		textsvg.appendChild(text);
+		text.setAttribute("font-size",25);
+		text.setAttribute("text-anchor","start");
+		text.setAttribute("x",pos+5);
+		text.setAttribute("y",90);
+		text.innerHTML=label;
+		return pos+text.getBBox().width+2;
+	    }
+	    
+	    text.innerHTML=morph.getElementsByTagName("string")[0].getAttribute("value");
+	    var fields=morph.getElementsByTagName("fields")[0];
+	    var pos=0;
+	    for(var i=0; i < fields.children.length; i++){
+		if(i>0){
+		    pos=makeSVGText("-",textsvg,pos);
+		}
+		pre_pos=pos;
+		pos=makeSVGText(fields.children[i].getElementsByTagName("string")[0].getAttribute("value"),textsvg,pos);
+
+		var new_frame = document.createElementNS("http://www.w3.org/2000/svg","svg");
+		new_frame.setAttribute("type","frame");
+		textsvg.appendChild(new_frame);
+
+	
+		transformFS(fields.children[i].getElementsByTagName("feats")[0].children[0],new_frame);
+		for (var j = 0; j < new_frame.children.length; j++) {
+		    var one_new_frame=new_frame.children[j];
+		    if (one_new_frame.getAttribute("type")=="fs") {
+			processFS(one_new_frame);
+			one_new_frame.setAttribute("y",180); 
+			one_new_frame.setAttribute("x",pre_pos);
+			pos=pos+one_new_frame.getBBox().width+2
+		    }
 		}
 		
-		// turn tree elements into daughters of the SVG root
-		transformTree(entry.getElementsByTagName("tree")[0],svgRoot);  // TODO: remove second argument?
-		for (var i = 0; i < svgRoot.children.length; i++) {
-				if (svgRoot.children[i].getAttribute("type") == "tree") {
-						syntree = svgRoot.children[i];
-						syntree.setAttribute("id","synTreeSVG");
-				}
-		}	
-
-		processTree(svgRoot);
-		addTreeButtons(svgRoot);
+	    }
+	    textsvg.setAttribute("id","synTreeSVG");
+	}
+    }
+    else{
+	// turn tree elements into daughters of the SVG root
+	transformTree(tree,svgRoot);  // TODO: remove second argument?
+    }
+    
+    for (var i = 0; i < svgRoot.children.length; i++) {
+	if (svgRoot.children[i].getAttribute("type") == "tree") {
+	    syntree = svgRoot.children[i];
+	    syntree.setAttribute("id","synTreeSVG");
+	}
+    }	
+    
+    processTree(svgRoot);
+    addTreeButtons(svgRoot);
 }
 
 // makeFrame is used in the webgui
@@ -353,35 +419,35 @@ function makeInterface(target,entry) {
 
 // turn inTree into an svg element and make it daughter of outParent
 function transformTree (inTree,outParent) {
-		var daughters;
-		if (inTree.children.length > 1) {
-				daughters = document.createElementNS("http://www.w3.org/2000/svg","svg");
-				daughters.setAttribute("type","children");
-				outParent.appendChild(daughters);
-		}
-		else { daughters = outParent; }
-		for (var i = 0; i < inTree.children.length; i++){
-				var child = inTree.children.item(i);
-				var new_outParent = document.createElementNS("http://www.w3.org/2000/svg","svg");
-				if (child.tagName=="node") {
-						new_outParent.setAttribute("type","tree");
-						daughters.appendChild(new_outParent);
-						transformTree(child,new_outParent);
-				}
-				if (child.tagName=="narg") {
-						new_outParent.setAttribute("type","node");
-						if (child.parentNode.getAttribute("type") != "std"){ 
-								new_outParent.setAttribute("mark",child.parentNode.getAttribute("type"));
-						}
-				                if (!/XMGVAR_/.test(child.parentNode.getAttribute("name")) && child.parentNode.getAttribute("name")!=null){ 
-								new_outParent.setAttribute("name",child.parentNode.getAttribute("name"));
-						}
-						outParent.appendChild(new_outParent);
-						outParent.insertBefore(new_outParent,outParent.children[0]); // root node element comes first			
-						transformFS(child.children[0],new_outParent);
-						reorderFS(new_outParent);
-				}
-		}
+    var daughters;
+    if (inTree.children.length > 1) {
+	daughters = document.createElementNS("http://www.w3.org/2000/svg","svg");
+	daughters.setAttribute("type","children");
+	outParent.appendChild(daughters);
+    }
+    else { daughters = outParent; }
+    for (var i = 0; i < inTree.children.length; i++){
+	var child = inTree.children.item(i);
+	var new_outParent = document.createElementNS("http://www.w3.org/2000/svg","svg");
+	if (child.tagName=="node") {
+	    new_outParent.setAttribute("type","tree");
+	    daughters.appendChild(new_outParent);
+	    transformTree(child,new_outParent);
+	}
+	if (child.tagName=="narg") {
+	    new_outParent.setAttribute("type","node");
+	    if (child.parentNode.getAttribute("type") != "std"){ 
+		new_outParent.setAttribute("mark",child.parentNode.getAttribute("type"));
+	    }
+	    if (!/XMGVAR_/.test(child.parentNode.getAttribute("name")) && child.parentNode.getAttribute("name")!=null){ 
+		new_outParent.setAttribute("name",child.parentNode.getAttribute("name"));
+	    }
+	    outParent.appendChild(new_outParent);
+	    outParent.insertBefore(new_outParent,outParent.children[0]); // root node element comes first			
+	    transformFS(child.children[0],new_outParent);
+	    reorderFS(new_outParent);
+	}
+    }
 }
 
 // ypoint is the coordinate where the relation should be print
@@ -589,8 +655,8 @@ function reorderFS(node) {
 }
 
 function processTree (tree) {
-    console.log("Processing tree ");
-    console.log(tree);
+    //console.log("Processing tree ");
+    //console.log(tree);
 		for (var i = 0; i < tree.children.length; i++){
 				var child = tree.children.item(i);
 				if (child.getAttribute("type")=="tree") {
@@ -607,12 +673,12 @@ function processTree (tree) {
 						processNode(child);
 				}
 		}
-        console.log("Done processing tree ");
+        //console.log("Done processing tree ");
 }
 
 function processNode (node) {
-    console.log("Processing node");
-    console.log(node);
+    //console.log("Processing node");
+    //console.log(node);
 		var fs = node.children[0];
                 processFS(fs,node.getAttribute("name"));
 		var fsHeight = fs.getBBox().height;
@@ -700,7 +766,7 @@ function processNode (node) {
 		                node.appendChild(collapseExpandSVG);
 				node.setAttribute("x",0);
 		}
-    console.log("Finished processing node");
+    //console.log("Finished processing node");
 }
 
 function addLabel(labeltext,target) {
@@ -756,8 +822,8 @@ function addPhon(phon,node) {
 
 
 function processFS(fs, nodename=null) {
-    console.log("Processing FS");
-    console.log(fs);
+    //console.log("Processing FS");
+    //console.log(fs);
     fs.setAttribute("x",0); // needed for node marks
     var hasType = false;
     var ypoint = 3;
@@ -794,15 +860,17 @@ function processFS(fs, nodename=null) {
     var maxlengthFeatures = 0;
     for (var i = firstFeatureChild; i < fs.children.length; i++){
 	var feature = fs.children[i];
-	var featureName = feature.children[0];
-	
-	featureName.setAttribute("font-size","13");
-	featureName.setAttribute("y","1em");
-	featureName.setAttribute("font-variant","normal");
-	featureName.innerHTML = featureName.innerHTML.toUpperCase();
-	if (featureName.getBBox().width > maxlengthFeatures) {
-	    maxlengthFeatures = featureName.getBBox().width;
-	}	
+	if(feature.children[0]!=null){
+	    var featureName = feature.children[0];
+	    
+	    featureName.setAttribute("font-size","13");
+	    featureName.setAttribute("y","1em");
+	    featureName.setAttribute("font-variant","normal");
+	    featureName.innerHTML = featureName.innerHTML.toUpperCase();
+	    if (featureName.getBBox().width > maxlengthFeatures) {
+		maxlengthFeatures = featureName.getBBox().width;
+	    }
+	}
     }
     
     //	process feature and value
@@ -892,12 +960,12 @@ function processFS(fs, nodename=null) {
     FSlb.setAttribute("d","M "+right_x+" "+top_y+" H "+(right_x-brackettip)+" M "+right_x+" "+top_y+" L "+right_x+" "+bot_y+" H "+(right_x-brackettip));//M "+ fs.getBBox().width +" 2 L "+ fs.getBBox().width +" " + fs.getBBox().height + "H 7" );
     FSlb.setAttribute("style", "stroke:black; fill:none;");
     fs.appendChild(FSlb);
-    console.log("Finished processing fs");
+    //console.log("Finished processing fs");
 }
 
 
 function drawTree (tree) {
-    console.log("Drawing tree");
+    //console.log("Drawing tree");
     var root;
     var rootHeight;
     var rootWidth;
@@ -935,7 +1003,7 @@ function drawTree (tree) {
 	    daughtersXpoint += child.getBBox().width + offsetxNode; 
 	}
     }
-    console.log("Still drawing tree");
+    //console.log("Still drawing tree");
     
     // center root node
     if (daughters) {
@@ -959,7 +1027,7 @@ function drawTree (tree) {
 	}
     }
     
-    console.log("Drawing edges");
+    //console.log("Drawing edges");
     // draw edges
     if (daughters) {
 	for (var i = 0; i < daughters.children.length; i++){
@@ -988,7 +1056,7 @@ function drawTree (tree) {
 	    }
 	}
     }
-    console.log("Finished drawing tree");
+    //console.log("Finished drawing tree");
 }
 
 
@@ -1250,7 +1318,7 @@ function pressedButtonExportSVG (evt) {
 
 function exportSVG (object) {
     var clone = object.cloneNode(true);
-    console.log(clone);
+    //console.log(clone);
 		// clean-up SVG: remove ce-switch and onclick-stuff
 		var svgElements = clone.getElementsByTagName("svg");
 		for (var i = 0; i<svgElements.length; i++) {
@@ -1504,7 +1572,7 @@ function texifyNode (node) {
 		}
 		if (node.hasAttribute("mark")) {
 		    var mark = node.getAttribute("mark");
-		    console.log(mark);
+		    //console.log(mark);
 				if (mark == "subst") {texString += "$\\downarrow$";}
 				if (mark == "anchor") {texString += "$\\diamond$";}
 				if (mark == "foot") {texString += "*";}
@@ -1519,7 +1587,7 @@ function texifyNode (node) {
 function texifyFS (fs){
 		var texString = "\\[";
     if (fs.hasAttribute("fstype")) {
-	console.log(fs.getAttribute("fstype"));
+	//console.log(fs.getAttribute("fstype"));
 	// /_/gi is a regex which we use for escaping underscores (maybe needed at some other places)
 	texString += "\\asort{" + fs.getAttribute("fstype").replace(/_/gi,"\\_") + "}";
 		}
